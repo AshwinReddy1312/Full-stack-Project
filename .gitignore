@@ -1,0 +1,49 @@
+# ----------------------------
+# Python
+# ----------------------------
+
+# Virtual Environment
+Backend/fenv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Database
+db.sqlite3
+
+# Environment Variables
+.env
+.env.*
+*.venv
+
+# Django media (optional)
+media/
+
+# ----------------------------
+# React / Node
+# ----------------------------
+
+Frontend/node_modules/
+Frontend/dist/
+Frontend/.env
+
+# ----------------------------
+# VS Code
+# ----------------------------
+
+.vscode/
+
+# ----------------------------
+# OS Files
+# ----------------------------
+
+.DS_Store
+Thumbs.db
+
+# ----------------------------
+# Logs
+# ----------------------------
+
+*.log
