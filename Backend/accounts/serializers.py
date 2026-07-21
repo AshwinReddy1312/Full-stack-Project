@@ -36,6 +36,11 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("A user with this email already exists.")
         return value
 
+    def validate_username(self, value):
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError("A user with this username already exists.")
+        return value
+
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:
             raise serializers.ValidationError({"password_confirm": "Passwords do not match."})
@@ -58,11 +63,9 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop('password_confirm')
         password = validated_data.pop('password')
-        
-        # Create user using objects.create_user to handle standard properties (like hashing password)
-        user = User.objects.create(**validated_data)
-        user.set_password(password)
-        user.save()
+
+        # Use create_user so the password is hashed correctly from the start
+        user = User.objects.create_user(password=password, **validated_data)
         return user
 
 class UpdateProfileSerializer(serializers.ModelSerializer):
