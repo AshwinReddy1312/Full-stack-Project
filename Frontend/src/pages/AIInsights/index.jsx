@@ -20,9 +20,9 @@ const PERIOD_OPTIONS = [
 
 const REPORT_TYPES = [
   { value: 'full',            label: 'Full Analysis',        icon: 'bi-bar-chart-line-fill', color: '#6366f1' },
-  { value: 'revenue',         label: 'Revenue Analysis',     icon: 'bi-currency-rupee',      color: '#f5c518' },
+  { value: 'revenue',         label: 'Revenue Analysis',     icon: 'bi-currency-rupee',      color: '#1a56db' },
   { value: 'products',        label: 'Product Performance',  icon: 'bi-box-seam-fill',       color: '#22c55e' },
-  { value: 'customers',       label: 'Customer Insights',    icon: 'bi-people-fill',         color: '#06b6d4' },
+  { value: 'customers',       label: 'Customer Insights',    icon: 'bi-people-fill',         color: '#0ea5e9' },
   { value: 'recommendations', label: 'Recommendations',      icon: 'bi-lightning-fill',      color: '#f97316' },
 ];
 
@@ -133,11 +133,11 @@ const InsightRenderer = ({ insights, reportType }) => {
     <div>
       {/* Executive Summary */}
       {insights.executive_summary && (
-        <div style={{ background: 'linear-gradient(135deg, #fefce8 0%, #fff 100%)',
-          border: '1px solid #fde68a', borderRadius: 14, padding: '1.25rem 1.5rem', marginBottom: 16 }}>
-          <div style={{ fontWeight: 700, fontSize: '0.78rem', color: '#92400e', textTransform: 'uppercase',
+        <div style={{ background: 'linear-gradient(135deg, #eff6ff 0%, #fff 100%)',
+          border: '1px solid #bfdbfe', borderRadius: 14, padding: '1.25rem 1.5rem', marginBottom: 16 }}>
+          <div style={{ fontWeight: 700, fontSize: '0.78rem', color: '#1e40af', textTransform: 'uppercase',
             letterSpacing: '0.06em', marginBottom: 8 }}>
-            <i className="bi bi-stars me-2" style={{ color: '#ca8a04' }}></i>Executive Summary
+            <i className="bi bi-stars me-2" style={{ color: '#1a56db' }}></i>Executive Summary
           </div>
           <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.7, color: 'var(--text-primary)' }}>
             {insights.executive_summary}
@@ -147,7 +147,7 @@ const InsightRenderer = ({ insights, reportType }) => {
               <div style={{ fontWeight: 700, fontSize: '0.78rem', color: 'var(--text-muted)' }}>Performance Score</div>
               <div style={{ flex: 1, height: 8, background: '#e5e5e0', borderRadius: 999, overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: insights.performance_score + '%',
-                  background: insights.performance_score >= 70 ? '#22c55e' : insights.performance_score >= 40 ? '#f5c518' : '#ef4444',
+                  background: insights.performance_score >= 70 ? '#22c55e' : insights.performance_score >= 40 ? '#1a56db' : '#ef4444',
                   borderRadius: 999, transition: 'width 1s ease' }}></div>
               </div>
               <span style={{ fontWeight: 800, fontSize: '1rem', minWidth: 40 }}>{insights.performance_score}/100</span>
@@ -167,7 +167,7 @@ const InsightRenderer = ({ insights, reportType }) => {
 
       {/* Revenue insights */}
       {insights.revenue_insights?.length > 0 && (
-        <Section title="Revenue Insights" icon="bi-currency-rupee" color="#f5c518">
+        <Section title="Revenue Insights" icon="bi-currency-rupee" color="#1a56db">
           {renderList(insights.revenue_insights)}
         </Section>
       )}
@@ -195,7 +195,7 @@ const InsightRenderer = ({ insights, reportType }) => {
 
       {/* Star products */}
       {insights.star_products?.length > 0 && (
-        <Section title="Star Products" icon="bi-trophy-fill" color="#f5c518">
+        <Section title="Star Products" icon="bi-trophy-fill" color="#1a56db">
           {renderList(insights.star_products)}
         </Section>
       )}
@@ -242,7 +242,7 @@ const InsightRenderer = ({ insights, reportType }) => {
         </Section>
       )}
       {insights.short_term?.length > 0 && (
-        <Section title="Short Term (1 Month)" icon="bi-calendar-check" color="#f5c518">
+        <Section title="Short Term (1 Month)" icon="bi-calendar-check" color="#0ea5e9">
           {renderRecs(insights.short_term)}
         </Section>
       )}
@@ -353,7 +353,7 @@ const AIInsights = () => {
   const statusColors = {
     completed: { bg: '#f0fdf4', color: '#16a34a', border: '#bbf7d0' },
     failed:    { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' },
-    pending:   { bg: '#fefce8', color: '#ca8a04', border: '#fde68a' },
+    pending:   { bg: '#eff6ff', color: '#1a56db', border: '#bfdbfe' },
   };
 
   return (
@@ -362,7 +362,7 @@ const AIInsights = () => {
       <div className="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
         <div>
           <h4 style={{ fontWeight: 800, marginBottom: 2 }}>
-            <i className="bi bi-stars me-2" style={{ color: '#ca8a04' }}></i>AI Business Insights
+            <i className="bi bi-stars me-2" style={{ color: '#1a56db' }}></i>AI Business Insights
           </h4>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: 0 }}>
             GPT-4o powered analysis of your business data — recommendations, risks, and opportunities.
@@ -375,8 +375,8 @@ const AIInsights = () => {
         <div className="col-lg-4">
 
           {/* Generate card */}
-          <div className="card-panel p-4 mb-4" style={{ background: 'linear-gradient(135deg, #fefce8 0%, #fff 80%)', border: '1px solid #fde68a' }}>
-            <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: 16, color: '#92400e' }}>
+          <div className="card-panel p-4 mb-4" style={{ background: 'linear-gradient(135deg, #eff6ff 0%, #fff 80%)', border: '1px solid #bfdbfe' }}>
+            <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: 16, color: '#1e40af' }}>
               <i className="bi bi-magic me-2"></i>Generate New Report
             </div>
 

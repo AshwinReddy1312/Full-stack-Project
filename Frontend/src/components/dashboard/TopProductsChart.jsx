@@ -9,7 +9,7 @@ import {
   Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
 
-const COLORS = ['#f5c518', '#22c55e', '#6366f1', '#ef4444', '#06b6d4', '#f97316', '#a855f7', '#ec4899', '#14b8a6', '#84cc16'];
+const COLORS = ['#1a56db', '#0ea5e9', '#22c55e', '#6366f1', '#ef4444', '#f97316', '#a855f7', '#ec4899', '#14b8a6', '#84cc16'];
 
 const fmt = (v) => {
   if (v >= 1_000_000) return '₹' + (v / 1_000_000).toFixed(1) + 'M';
@@ -68,9 +68,9 @@ const TopProductsChart = ({ data = [], loading, onSortChange }) => {
           <button key={key} onClick={() => handleSort(key)}
             style={{
               padding: '3px 12px', borderRadius: 8, fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
-              background: sortBy === key ? 'var(--accent)' : 'var(--bg-secondary)',
+              background: sortBy === key ? 'var(--accent-gradient)' : 'var(--bg-secondary)',
               border: `1px solid ${sortBy === key ? 'var(--accent)' : 'var(--border)'}`,
-              color: sortBy === key ? '#1a1a1a' : 'var(--text-secondary)',
+              color: sortBy === key ? '#ffffff' : 'var(--text-secondary)',
             }}
           >
             {label}

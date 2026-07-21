@@ -51,8 +51,7 @@ const KPICard = ({ title, value, subtitle, icon, color = '#6366f1', trend, loadi
                 background: trendUp ? '#f0fdf4' : '#fef2f2',
                 color: trendUp ? '#16a34a' : '#dc2626',
                 border: `1px solid ${trendUp ? '#bbf7d0' : '#fecaca'}`,
-              }}>
-                <i className={`bi ${trendUp ? 'bi-arrow-up-short' : 'bi-arrow-down-short'}`}></i>
+              }}>                <i className={`bi ${trendUp ? 'bi-arrow-up-short' : 'bi-arrow-down-short'}`}></i>
                 {Math.abs(trend)}%
               </span>
               <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>vs previous period</span>
