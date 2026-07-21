@@ -5,8 +5,9 @@ import { useAuth } from '../context/AuthContext';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const NAV_ITEMS = [
-  { label: 'Dashboard', icon: 'bi-grid-fill',     path: '/',         exact: true },
-  { label: 'Products',  icon: 'bi-box-seam-fill', path: '/products'              },
+  { label: 'Dashboard', icon: 'bi-grid-fill',       path: '/',          exact: true },
+  { label: 'Products',  icon: 'bi-box-seam-fill',   path: '/products'               },
+  { label: 'Customers', icon: 'bi-people-fill',      path: '/customers'              },
 ];
 
 const MainLayout = () => {
@@ -37,10 +38,14 @@ const MainLayout = () => {
   const getPageMeta = () => {
     const p = location.pathname;
     if (p === '/')                       return { title: 'Dashboard',       sub: 'Welcome back, ' + (user?.first_name || '') };
-    if (p === '/products')               return { title: 'Products',        sub: 'Manage your product catalogue' };
-    if (p === '/products/add')           return { title: 'Add Product',     sub: 'Create a new product' };
-    if (p.startsWith('/products/edit/')) return { title: 'Edit Product',    sub: 'Update product details' };
-    if (p.startsWith('/products/'))      return { title: 'Product Details', sub: 'View product information' };
+    if (p === '/products')                return { title: 'Products',         sub: 'Manage your product catalogue' };
+    if (p === '/products/add')            return { title: 'Add Product',      sub: 'Create a new product' };
+    if (p.startsWith('/products/edit/'))  return { title: 'Edit Product',     sub: 'Update product details' };
+    if (p.startsWith('/products/'))       return { title: 'Product Details',  sub: 'View product information' };
+    if (p === '/customers')               return { title: 'Customers',        sub: 'Manage your customer database' };
+    if (p === '/customers/add')           return { title: 'Add Customer',     sub: 'Register a new customer' };
+    if (p.startsWith('/customers/edit/')) return { title: 'Edit Customer',    sub: 'Update customer details' };
+    if (p.startsWith('/customers/'))      return { title: 'Customer Details', sub: 'View customer profile' };
     return { title: 'AI Dashboard', sub: '' };
   };
 
