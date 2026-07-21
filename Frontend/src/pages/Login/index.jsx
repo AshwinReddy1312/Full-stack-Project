@@ -8,6 +8,7 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm();
 
   const onSubmit = async (data) => {
@@ -15,12 +16,12 @@ const Login = () => {
     try {
       const res = await login(data.email, data.password);
       if (res.success) {
-        toast.success(res.message || 'Logged in successfully!');
+        toast.success('Welcome back!');
         navigate('/');
       } else {
-        toast.error(res.message || 'Login failed');
+        toast.error(res.message || 'Invalid credentials');
       }
-    } catch (err) {
+    } catch {
       toast.error('An unexpected error occurred.');
     } finally {
       setSubmitting(false);
@@ -28,85 +29,90 @@ const Login = () => {
   };
 
   return (
-    <div className="glass-panel p-5 w-100 animate__animated animate__fadeIn" style={{ maxWidth: '450px' }}>
+    <div className="auth-card" style={{ maxWidth: 440 }}>
       <div className="text-center mb-4">
-        <i className="bi bi-cpu-fill fs-1 mb-2" style={{ color: 'var(--accent-secondary)' }}></i>
-        <h2 className="fw-bold mt-2">Welcome Back</h2>
-        <p className="text-secondary">Sign in to your AI Business Dashboard</p>
+        <h2 style={{ fontWeight: 800, fontSize: '1.6rem', color: 'var(--text-primary)', marginBottom: '0.3rem' }}>
+          Welcome back
+        </h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+          Sign in to your AI Business Dashboard
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        {/* Email Address */}
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        {/* Email */}
         <div className="mb-3">
-          <label className="form-label fw-semibold text-secondary">Email Address</label>
+          <label className="form-label">Email Address</label>
           <div className="input-group">
-            <span className="input-group-text bg-transparent border-end-0 text-secondary" style={{ borderColor: 'var(--card-border)' }}>
-              <i className="bi bi-envelope"></i>
+            <span className="input-group-text" style={{ borderRight: 'none' }}>
+              <i className="bi bi-envelope" style={{ fontSize: '0.875rem' }}></i>
             </span>
             <input
               type="email"
-              className={`form-control glass-input border-start-0 ${errors.email ? 'is-invalid' : ''}`}
-              placeholder="name@example.com"
+              className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+              style={{ borderLeft: 'none' }}
+              placeholder="you@example.com"
               {...register('email', {
-                required: 'Email address is required',
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: 'Invalid email address',
-                },
+                required: 'Email is required',
+                pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Invalid email' },
               })}
             />
           </div>
           {errors.email && (
-            <div className="text-danger fs-7 mt-1" style={{ fontSize: '0.8rem' }}>{errors.email.message}</div>
+            <div style={{ fontSize: '0.78rem', color: '#dc2626', marginTop: 4 }}>
+              <i className="bi bi-exclamation-circle me-1"></i>{errors.email.message}
+            </div>
           )}
         </div>
 
         {/* Password */}
         <div className="mb-4">
-          <label className="form-label fw-semibold text-secondary">Password</label>
+          <label className="form-label">Password</label>
           <div className="input-group">
-            <span className="input-group-text bg-transparent border-end-0 text-secondary" style={{ borderColor: 'var(--card-border)' }}>
-              <i className="bi bi-shield-lock"></i>
+            <span className="input-group-text" style={{ borderRight: 'none' }}>
+              <i className="bi bi-lock" style={{ fontSize: '0.875rem' }}></i>
             </span>
             <input
-              type="password"
-              className={`form-control glass-input border-start-0 ${errors.password ? 'is-invalid' : ''}`}
+              type={showPassword ? 'text' : 'password'}
+              className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+              style={{ borderLeft: 'none', borderRight: 'none' }}
               placeholder="••••••••"
-              {...register('password', {
-                required: 'Password is required',
-                minLength: {
-                  value: 8,
-                  message: 'Password must be at least 8 characters long',
-                },
-              })}
+              {...register('password', { required: 'Password is required' })}
             />
+            <button
+              type="button"
+              className="input-group-text"
+              style={{ borderLeft: 'none', cursor: 'pointer', background: 'var(--bg-card)' }}
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`} style={{ fontSize: '0.875rem' }}></i>
+            </button>
           </div>
           {errors.password && (
-            <div className="text-danger fs-7 mt-1" style={{ fontSize: '0.8rem' }}>{errors.password.message}</div>
+            <div style={{ fontSize: '0.78rem', color: '#dc2626', marginTop: 4 }}>
+              <i className="bi bi-exclamation-circle me-1"></i>{errors.password.message}
+            </div>
           )}
         </div>
 
-        {/* Submit button */}
         <button
           type="submit"
-          className="btn btn-glow w-100 mb-3"
+          className="btn btn-accent w-100 py-2 mb-3"
+          style={{ borderRadius: 10, fontSize: '0.9rem' }}
           disabled={submitting}
         >
           {submitting ? (
-            <>
-              <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-              Signing in...
-            </>
+            <><span className="spinner-border spinner-border-sm me-2"></span>Signing in…</>
           ) : (
-            'Sign In'
+            <><i className="bi bi-arrow-right-circle me-2"></i>Sign In</>
           )}
         </button>
       </form>
 
-      <div className="text-center mt-3">
-        <span className="text-secondary">Don't have an account? </span>
-        <Link to="/register" className="text-decoration-none fw-semibold" style={{ color: 'var(--accent-secondary)' }}>
-          Create one now
+      <div className="text-center" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+        Don't have an account?{' '}
+        <Link to="/register" style={{ color: 'var(--text-primary)', fontWeight: 700, textDecoration: 'none' }}>
+          Create one
         </Link>
       </div>
     </div>
