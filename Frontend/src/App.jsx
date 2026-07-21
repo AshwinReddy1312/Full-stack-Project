@@ -7,41 +7,56 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AuthLayout from './layouts/AuthLayout';
 import MainLayout from './layouts/MainLayout';
-import Login from './pages/Login';
+
+// Auth pages
+import Login    from './pages/Login';
 import Register from './pages/Register';
+
+// Dashboard
 import Dashboard from './pages/Dashboard';
+
+// Products
+import ProductList   from './pages/Products/ProductList';
+import AddProduct    from './pages/Products/AddProduct';
+import EditProduct   from './pages/Products/EditProduct';
+import ProductDetail from './pages/Products/ProductDetail';
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public Auth Routes */}
+          {/* ── Public auth routes ── */}
           <Route element={<AuthLayout />}>
-            <Route path="/login" element={<Login />} />
+            <Route path="/login"    element={<Login />} />
             <Route path="/register" element={<Register />} />
           </Route>
 
-          {/* Secure Protected Routes */}
+          {/* ── Protected routes ── */}
           <Route element={<ProtectedRoute />}>
             <Route element={<MainLayout />}>
+              {/* Dashboard */}
               <Route path="/" element={<Dashboard />} />
+
+              {/* Products */}
+              <Route path="/products"              element={<ProductList />} />
+              <Route path="/products/add"          element={<AddProduct />} />
+              <Route path="/products/:id"          element={<ProductDetail />} />
+              <Route path="/products/edit/:id"     element={<EditProduct />} />
             </Route>
           </Route>
 
-          {/* Fallback Catch-All Redirect */}
+          {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
-      
-      {/* Global Toast Notifications */}
+
       <ToastContainer
         position="top-right"
         autoClose={4000}
         hideProgressBar={false}
         newestOnTop
         closeOnClick
-        rtl={false}
         pauseOnFocusLoss
         draggable
         pauseOnHover
