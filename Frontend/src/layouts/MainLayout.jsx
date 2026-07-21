@@ -5,9 +5,10 @@ import { useAuth } from '../context/AuthContext';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const NAV_ITEMS = [
-  { label: 'Dashboard', icon: 'bi-grid-fill',       path: '/',          exact: true },
-  { label: 'Products',  icon: 'bi-box-seam-fill',   path: '/products'               },
-  { label: 'Customers', icon: 'bi-people-fill',      path: '/customers'              },
+  { label: 'Dashboard', icon: 'bi-grid-fill',                path: '/',          exact: true },
+  { label: 'Products',  icon: 'bi-box-seam-fill',            path: '/products'               },
+  { label: 'Customers', icon: 'bi-people-fill',              path: '/customers'              },
+  { label: 'Data Import', icon: 'bi-file-earmark-arrow-up-fill', path: '/uploads'            },
 ];
 
 const MainLayout = () => {
@@ -46,6 +47,9 @@ const MainLayout = () => {
     if (p === '/customers/add')           return { title: 'Add Customer',     sub: 'Register a new customer' };
     if (p.startsWith('/customers/edit/')) return { title: 'Edit Customer',    sub: 'Update customer details' };
     if (p.startsWith('/customers/'))      return { title: 'Customer Details', sub: 'View customer profile' };
+    if (p === '/uploads')                 return { title: 'Data Import',      sub: 'CSV upload history' };
+    if (p === '/uploads/new')             return { title: 'Import CSV',       sub: 'Upload and process sales data' };
+    if (p.startsWith('/uploads/'))        return { title: 'Upload Detail',    sub: 'View import summary' };
     return { title: 'AI Dashboard', sub: '' };
   };
 

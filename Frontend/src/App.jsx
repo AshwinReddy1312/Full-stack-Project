@@ -27,6 +27,10 @@ import AddCustomer    from './pages/Customers/AddCustomer';
 import EditCustomer   from './pages/Customers/EditCustomer';
 import CustomerDetail from './pages/Customers/CustomerDetail';
 
+// Sales / CSV Upload
+import CSVUpload      from './pages/Sales/CSVUpload';
+import UploadHistory  from './pages/Sales/UploadHistory';
+
 function App() {
   return (
     <AuthProvider>
@@ -54,6 +58,11 @@ function App() {
               <Route path="/customers/add"       element={<AddCustomer />} />
               <Route path="/customers/:id"       element={<CustomerDetail />} />
               <Route path="/customers/edit/:id"  element={<EditCustomer />} />
+
+              {/* Sales / CSV Upload */}
+              <Route path="/uploads"             element={<UploadHistory />} />
+              <Route path="/uploads/new"         element={<CSVUpload />} />
+              <Route path="/uploads/:id"         element={<UploadHistory />} />
             </Route>
           </Route>
 
