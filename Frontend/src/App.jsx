@@ -8,7 +8,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AuthLayout from './layouts/AuthLayout';
 import MainLayout from './layouts/MainLayout';
 
-// Auth pages
+// Auth
 import Login    from './pages/Login';
 import Register from './pages/Register';
 
@@ -21,32 +21,42 @@ import AddProduct    from './pages/Products/AddProduct';
 import EditProduct   from './pages/Products/EditProduct';
 import ProductDetail from './pages/Products/ProductDetail';
 
+// Customers
+import CustomerList   from './pages/Customers/CustomerList';
+import AddCustomer    from './pages/Customers/AddCustomer';
+import EditCustomer   from './pages/Customers/EditCustomer';
+import CustomerDetail from './pages/Customers/CustomerDetail';
+
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* ── Public auth routes ── */}
+          {/* Public */}
           <Route element={<AuthLayout />}>
             <Route path="/login"    element={<Login />} />
             <Route path="/register" element={<Register />} />
           </Route>
 
-          {/* ── Protected routes ── */}
+          {/* Protected */}
           <Route element={<ProtectedRoute />}>
             <Route element={<MainLayout />}>
-              {/* Dashboard */}
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/"  element={<Dashboard />} />
 
               {/* Products */}
-              <Route path="/products"              element={<ProductList />} />
-              <Route path="/products/add"          element={<AddProduct />} />
-              <Route path="/products/:id"          element={<ProductDetail />} />
-              <Route path="/products/edit/:id"     element={<EditProduct />} />
+              <Route path="/products"            element={<ProductList />} />
+              <Route path="/products/add"        element={<AddProduct />} />
+              <Route path="/products/:id"        element={<ProductDetail />} />
+              <Route path="/products/edit/:id"   element={<EditProduct />} />
+
+              {/* Customers */}
+              <Route path="/customers"           element={<CustomerList />} />
+              <Route path="/customers/add"       element={<AddCustomer />} />
+              <Route path="/customers/:id"       element={<CustomerDetail />} />
+              <Route path="/customers/edit/:id"  element={<EditCustomer />} />
             </Route>
           </Route>
 
-          {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
@@ -60,7 +70,7 @@ function App() {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="dark"
+        theme="light"
       />
     </AuthProvider>
   );
