@@ -5,10 +5,11 @@ import { useAuth } from '../context/AuthContext';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const NAV_ITEMS = [
-  { label: 'Dashboard', icon: 'bi-grid-fill',                path: '/',          exact: true },
-  { label: 'Products',  icon: 'bi-box-seam-fill',            path: '/products'               },
-  { label: 'Customers', icon: 'bi-people-fill',              path: '/customers'              },
-  { label: 'Data Import', icon: 'bi-file-earmark-arrow-up-fill', path: '/uploads'            },
+  { label: 'Dashboard',   icon: 'bi-grid-fill',                    path: '/',             exact: true },
+  { label: 'Products',    icon: 'bi-box-seam-fill',                path: '/products'                  },
+  { label: 'Customers',   icon: 'bi-people-fill',                  path: '/customers'                 },
+  { label: 'Data Import', icon: 'bi-file-earmark-arrow-up-fill',   path: '/uploads'                   },
+  { label: 'AI Insights', icon: 'bi-stars',                        path: '/ai-insights'               },
 ];
 
 const MainLayout = () => {
@@ -38,7 +39,7 @@ const MainLayout = () => {
 
   const getPageMeta = () => {
     const p = location.pathname;
-    if (p === '/')                       return { title: 'Dashboard',       sub: 'Welcome back, ' + (user?.first_name || '') };
+    if (p === '/')                        return { title: 'Dashboard',       sub: 'Your business analytics overview' };
     if (p === '/products')                return { title: 'Products',         sub: 'Manage your product catalogue' };
     if (p === '/products/add')            return { title: 'Add Product',      sub: 'Create a new product' };
     if (p.startsWith('/products/edit/'))  return { title: 'Edit Product',     sub: 'Update product details' };
@@ -48,8 +49,9 @@ const MainLayout = () => {
     if (p.startsWith('/customers/edit/')) return { title: 'Edit Customer',    sub: 'Update customer details' };
     if (p.startsWith('/customers/'))      return { title: 'Customer Details', sub: 'View customer profile' };
     if (p === '/uploads')                 return { title: 'Data Import',      sub: 'CSV upload history' };
-    if (p === '/uploads/new')             return { title: 'Import CSV',       sub: 'Upload and process sales data' };
+    if (p === '/uploads/new')             return { title: 'Import CSV',       sub: 'Upload and process business data' };
     if (p.startsWith('/uploads/'))        return { title: 'Upload Detail',    sub: 'View import summary' };
+    if (p === '/ai-insights')             return { title: 'AI Insights',      sub: 'GPT-4o powered business analysis' };
     return { title: 'AI Dashboard', sub: '' };
   };
 

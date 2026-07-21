@@ -88,13 +88,15 @@ class CSVUploadView(APIView):
         preview_rows = preview_csv(file, validation['column_map'])
 
         return ok('CSV validated successfully. Review the preview and confirm import.', {
-            'upload_id':   upload.pk,
-            'upload_ref':  upload.upload_id,
-            'filename':    upload.filename,
-            'total_rows':  validation['total_rows'],
-            'column_map':  validation['column_map'],
-            'preview':     preview_rows,
-            'preview_count': len(preview_rows),
+            'upload_id':       upload.pk,
+            'upload_ref':      upload.upload_id,
+            'filename':        upload.filename,
+            'total_rows':      validation['total_rows'],
+            'column_map':      validation['column_map'],
+            'mapped_fields':   validation.get('mapped_fields', []),
+            'unmapped_fields': validation.get('unmapped_fields', []),
+            'preview':         preview_rows,
+            'preview_count':   len(preview_rows),
         }, status.HTTP_201_CREATED)
 
 

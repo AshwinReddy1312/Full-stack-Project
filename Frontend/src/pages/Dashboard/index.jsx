@@ -1,291 +1,429 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+/**
+ * Dashboard/index.jsx
+ * -------------------
+ * Main analytics dashboard. Fetches all data from /api/dashboard/ endpoints.
+ * Shows: KPI cards, revenue trend, category breakdown, top products,
+ * top customers, recent sales, monthly summary table.
+ */
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
 
-const Dashboard = () => {
-  const { user, updateProfile, changePassword } = useAuth();
-  const [submittingProfile, setSubmittingProfile] = useState(false);
-  const [submittingPassword, setSubmittingPassword] = useState(false);
-  const [imagePreview, setImagePreview] = useState(null);
+import {
+  getDashboardSummary,
+  getRevenueTrend,
+  getSalesByCategory,
+  getTopProducts,
+  getTopCustomers,
+  getRecentSales,
+  getMonthlySummary,
+} from '../../services/dashboardService';
 
-  // Profile Edit Form
-  const {
-    register: registerProfile,
-    handleSubmit: handleProfileSubmit,
-    setValue: setProfileValue,
-    formState: { errors: profileErrors }
-  } = useForm({
-    defaultValues: {
-      first_name: user?.first_name || '',
-      last_name: user?.last_name || '',
-      phone_number: user?.phone_number || ''
-    }
-  });
+import KPICard          from '../../components/dashboard/KPICard';
+import RevenueChart     from '../../components/dashboard/RevenueChart';
+import CategoryChart    from '../../components/dashboard/CategoryChart';
+import TopProductsChart from '../../components/dashboard/TopProductsChart';
+import RecentSalesTable from '../../components/dashboard/RecentSalesTable';
 
-  // Password Change Form
-  const {
-    register: registerPassword,
-    handleSubmit: handlePasswordSubmit,
-    watch: watchPassword,
-    reset: resetPasswordForm,
-    formState: { errors: passwordErrors }
-  } = useForm();
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const fmtCurrency = (v) =>
+  v >= 1_000_000
+    ? '₹' + (v / 1_000_000).toFixed(2) + 'M'
+    : v >= 1_000
+    ? '₹' + (v / 1_000).toFixed(1) + 'K'
+    : '₹' + Number(v || 0).toFixed(2);
 
-  const newPassword = watchPassword('new_password');
+const PERIOD_OPTIONS = [
+  { label: '7 Days',  value: '7d'   },
+  { label: '30 Days', value: '30d'  },
+  { label: '90 Days', value: '90d'  },
+  { label: '6 Months',value: '180d' },
+  { label: '1 Year',  value: '365d' },
+  { label: 'All Time',value: 'all'  },
+];
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setProfileValue('profile_image', file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+// ── Empty state shown when no SalesRecord data exists ─────────────────────────
+const EmptyState = ({ navigate }) => (
+  <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+    <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#fefce8', border: '2px solid #fde68a', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+      <i className="bi bi-bar-chart-line-fill" style={{ fontSize: '2rem', color: '#ca8a04' }}></i>
+    </div>
+    <h4 style={{ fontWeight: 800, marginBottom: 8 }}>No Sales Data Yet</h4>
+    <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', maxWidth: 400, margin: '0 auto 1.5rem' }}>
+      Import your sales data via CSV to see your dashboard, analytics, and AI insights come to life.
+    </p>
+    <button className="btn btn-accent px-5 py-2 fw-semibold" style={{ borderRadius: 10 }} onClick={() => navigate('/uploads/new')}>
+      <i className="bi bi-upload me-2"></i>Upload Sales CSV
+    </button>
+  </div>
+);
 
-  const onProfileSubmit = async (data) => {
-    setSubmittingProfile(true);
-    try {
-      const res = await updateProfile(data);
-      if (res.success) {
-        toast.success(res.message || 'Profile updated successfully!');
-      } else {
-        toast.error(res.message || 'Update failed');
-      }
-    } catch (err) {
-      toast.error('An unexpected error occurred.');
-    } finally {
-      setSubmittingProfile(false);
-    }
-  };
-
-  const onPasswordSubmit = async (data) => {
-    setSubmittingPassword(true);
-    try {
-      const res = await changePassword(data.old_password, data.new_password, data.new_password_confirm);
-      if (res.success) {
-        toast.success(res.message || 'Password changed successfully!');
-        resetPasswordForm();
-      } else {
-        if (res.errors) {
-          Object.keys(res.errors).forEach((key) => {
-            const val = res.errors[key];
-            const msg = Array.isArray(val) ? val[0] : val;
-            toast.error(`${key}: ${msg}`);
-          });
-        } else {
-          toast.error(res.message || 'Password change failed');
-        }
-      }
-    } catch (err) {
-      toast.error('An unexpected error occurred.');
-    } finally {
-      setSubmittingPassword(false);
-    }
-  };
-
-  const getProfileImage = () => {
-    if (imagePreview) return imagePreview;
-    if (user?.profile_image) {
-      if (user.profile_image.startsWith('http')) {
-        return user.profile_image;
-      }
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-      return `${baseUrl}${user.profile_image}`;
-    }
-    return 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleString();
-  };
+// ── Monthly Summary Table ─────────────────────────────────────────────────────
+const MonthlySummaryTable = ({ data = [], loading }) => {
+  if (loading) return (
+    <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="spinner-border" style={{ color: 'var(--accent)', width: '1.8rem', height: '1.8rem' }}></div>
+    </div>
+  );
+  if (!data.length) return <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', padding: '1rem 0' }}>No monthly data available.</p>;
 
   return (
-    <div className="row g-4 animate__animated animate__fadeIn">
-      {/* Profile Overview Card */}
-      <div className="col-lg-4">
-        <div className="glass-panel p-4 text-center">
-          <div className="position-relative d-inline-block mb-3">
-            <img
-              src={getProfileImage()}
-              alt="Profile"
-              className="rounded-circle border border-indigo"
-              style={{ width: '130px', height: '130px', objectFit: 'cover', borderWidth: '3px', borderColor: 'var(--accent-primary)' }}
-            />
-            <span className="position-absolute bottom-0 end-0 badge rounded-pill px-3 py-2 border border-dark" style={{ background: 'var(--accent-primary)' }}>
-              {user?.role}
-            </span>
+    <div className="table-responsive">
+      <table className="data-table" style={{ fontSize: '0.82rem' }}>
+        <thead>
+          <tr>
+            {['Month', 'Revenue', 'Profit', 'Orders', 'Qty', 'Avg Order', 'Customers', 'Growth'].map(h => (
+              <th key={h}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((row, idx) => (
+            <tr key={idx}>
+              <td style={{ fontWeight: 700 }}>{row.month}</td>
+              <td style={{ color: '#ca8a04', fontWeight: 600 }}>₹{Number(row.revenue).toLocaleString('en-IN')}</td>
+              <td style={{ color: '#16a34a', fontWeight: 600 }}>₹{Number(row.profit).toLocaleString('en-IN')}</td>
+              <td>{row.orders}</td>
+              <td>{row.quantity}</td>
+              <td>₹{Number(row.avg_order).toLocaleString('en-IN', { minimumFractionDigits: 0 })}</td>
+              <td>{row.unique_customers}</td>
+              <td>
+                {row.revenue_growth !== null && row.revenue_growth !== undefined ? (
+                  <span style={{
+                    color: row.revenue_growth >= 0 ? '#16a34a' : '#dc2626',
+                    fontWeight: 700, fontSize: '0.78rem',
+                  }}>
+                    {row.revenue_growth >= 0 ? '▲' : '▼'} {Math.abs(row.revenue_growth)}%
+                  </span>
+                ) : '—'}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+// ── Top Customers Table ───────────────────────────────────────────────────────
+const TopCustomersTable = ({ data = [], loading }) => {
+  if (loading) return (
+    <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="spinner-border" style={{ color: 'var(--accent)', width: '1.8rem', height: '1.8rem' }}></div>
+    </div>
+  );
+  if (!data.length) return <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', padding: '1rem 0' }}>No customer data.</p>;
+
+  return (
+    <div style={{ maxHeight: 320, overflowY: 'auto' }}>
+      {data.map((c, idx) => {
+        const initials = c.customer_name.slice(0, 2).toUpperCase();
+        return (
+          <div key={idx} className="d-flex align-items-center gap-3 py-2"
+            style={{ borderBottom: idx < data.length - 1 ? '1px solid var(--border)' : 'none' }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+              background: 'var(--accent)', color: '#1a1a1a',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 700, fontSize: '0.78rem',
+            }}>
+              {initials}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{c.customer_name}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                {c.orders} order{c.orders > 1 ? 's' : ''} · Last: {c.last_purchase}
+              </div>
+            </div>
+            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+              <div style={{ fontWeight: 700, fontSize: '0.875rem' }}>
+                ₹{Number(c.total_spent).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              </div>
+              <div style={{ fontSize: '0.72rem', color: '#22c55e' }}>
+                #{idx + 1}
+              </div>
+            </div>
           </div>
+        );
+      })}
+    </div>
+  );
+};
 
-          <h3 className="fw-bold mb-1">{user?.first_name} {user?.last_name}</h3>
-          <p className="text-secondary mb-3">@{user?.username}</p>
+// ── Main Dashboard Component ──────────────────────────────────────────────────
+const Dashboard = () => {
+  const { user }   = useAuth();
+  const navigate   = useNavigate();
+  const [period, setPeriod] = useState('30d');
 
-          <hr className="border-secondary border-opacity-10 my-4" />
+  // Data state
+  const [summary,       setSummary]       = useState(null);
+  const [trend,         setTrend]         = useState([]);
+  const [categories,    setCategories]    = useState([]);
+  const [topProducts,   setTopProducts]   = useState([]);
+  const [topCustomers,  setTopCustomers]  = useState([]);
+  const [recentSales,   setRecentSales]   = useState([]);
+  const [monthlySummary,setMonthlySummary]= useState([]);
 
-          <div className="text-start">
-            <div className="mb-3">
-              <small className="text-secondary d-block">Email Address</small>
-              <span className="fw-semibold">{user?.email}</span>
-            </div>
-            <div className="mb-3">
-              <small className="text-secondary d-block">Phone Number</small>
-              <span className="fw-semibold">{user?.phone_number || 'Not Provided'}</span>
-            </div>
-            <div className="mb-3">
-              <small className="text-secondary d-block">Joined On</small>
-              <span className="fw-semibold text-secondary" style={{ fontSize: '0.9rem' }}>{formatDate(user?.created_at)}</span>
-            </div>
-            <div className="mb-0">
-              <small className="text-secondary d-block">Last Updated</small>
-              <span className="fw-semibold text-secondary" style={{ fontSize: '0.9rem' }}>{formatDate(user?.updated_at)}</span>
-            </div>
+  // Loading state per section
+  const [loadingMap, setLoadingMap] = useState({
+    summary: true, trend: true, categories: true,
+    products: true, customers: true, recent: true, monthly: true,
+  });
+  const [hasData, setHasData] = useState(true);
+  const [productSort, setProductSort] = useState('revenue');
+
+  const setLoading = (key, val) => setLoadingMap(prev => ({ ...prev, [key]: val }));
+
+  // ── Fetch all data ──────────────────────────────────────────────────────────
+  const fetchAll = useCallback(async () => {
+    const params = { period };
+    const prodParams = { period, sort: productSort, limit: 10 };
+
+    // Reset loaders
+    setLoadingMap({ summary: true, trend: true, categories: true, products: true, customers: true, recent: true, monthly: true });
+
+    try {
+      const [sumRes, trendRes, catRes, prodRes, custRes, recentRes, monthlyRes] = await Promise.allSettled([
+        getDashboardSummary(params),
+        getRevenueTrend(params),
+        getSalesByCategory(params),
+        getTopProducts(prodParams),
+        getTopCustomers({ period, limit: 10 }),
+        getRecentSales({ limit: 10 }),
+        getMonthlySummary(params),
+      ]);
+
+      if (sumRes.status === 'fulfilled') {
+        const d = sumRes.value.data?.data;
+        setSummary(d);
+        setHasData(d?.total_orders > 0);
+      }
+      if (trendRes.status === 'fulfilled')    setTrend(trendRes.value.data?.data?.trend || []);
+      if (catRes.status === 'fulfilled')      setCategories(catRes.value.data?.data?.categories || []);
+      if (prodRes.status === 'fulfilled')     setTopProducts(prodRes.value.data?.data?.products || []);
+      if (custRes.status === 'fulfilled')     setTopCustomers(custRes.value.data?.data?.customers || []);
+      if (recentRes.status === 'fulfilled')   setRecentSales(recentRes.value.data?.data?.sales || []);
+      if (monthlyRes.status === 'fulfilled')  setMonthlySummary(monthlyRes.value.data?.data?.months || []);
+
+    } catch (err) {
+      toast.error('Failed to load dashboard data.');
+    } finally {
+      setLoadingMap({ summary: false, trend: false, categories: false, products: false, customers: false, recent: false, monthly: false });
+    }
+  }, [period, productSort]);
+
+  useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  // Refresh just products when sort changes
+  const handleProductSortChange = async (sort) => {
+    setProductSort(sort);
+    setLoading('products', true);
+    try {
+      const res = await getTopProducts({ period, sort, limit: 10 });
+      setTopProducts(res.data?.data?.products || []);
+    } catch {}
+    finally { setLoading('products', false); }
+  };
+
+  const noData = !loadingMap.summary && (!summary || summary.total_orders === 0);
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+          <h4 style={{ fontWeight: 800, marginBottom: 2 }}>
+            Welcome back, {user?.first_name || 'there'} 👋
+          </h4>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: 0 }}>
+            Here's what's happening with your business
+          </p>
+        </div>
+        <div className="d-flex align-items-center gap-2">
+          {/* Period selector */}
+          <div className="d-flex gap-1" style={{ background: 'var(--bg-secondary)', borderRadius: 10, padding: 4, border: '1px solid var(--border)' }}>
+            {PERIOD_OPTIONS.map(opt => (
+              <button key={opt.value} onClick={() => setPeriod(opt.value)}
+                style={{
+                  padding: '4px 12px', borderRadius: 7, fontSize: '0.75rem', fontWeight: 600,
+                  border: 'none', cursor: 'pointer', transition: 'all 0.15s',
+                  background: period === opt.value ? 'var(--accent)' : 'transparent',
+                  color: period === opt.value ? '#1a1a1a' : 'var(--text-muted)',
+                }}
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
+          {/* Upload shortcut */}
+          <button className="btn btn-accent px-3 py-2 fw-semibold" style={{ borderRadius: 10, fontSize: '0.82rem' }} onClick={() => navigate('/uploads/new')}>
+            <i className="bi bi-upload me-2"></i>Import CSV
+          </button>
         </div>
       </div>
 
-      {/* Editing panels */}
-      <div className="col-lg-8">
-        <div className="row g-4">
-          {/* Update Profile Form */}
-          <div className="col-12">
-            <div className="glass-panel p-4">
-              <h4 className="fw-bold mb-3"><i className="bi bi-person-gear me-2"></i>Edit Profile Details</h4>
-              <form onSubmit={handleProfileSubmit(onProfileSubmit)}>
-                <div className="row">
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label fw-semibold text-secondary">First Name</label>
-                    <input
-                      type="text"
-                      className={`form-control glass-input ${profileErrors.first_name ? 'is-invalid' : ''}`}
-                      placeholder="John"
-                      {...registerProfile('first_name', { required: 'First name is required' })}
-                    />
-                    {profileErrors.first_name && (
-                      <div className="text-danger fs-7 mt-1" style={{ fontSize: '0.8rem' }}>{profileErrors.first_name.message}</div>
-                    )}
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label fw-semibold text-secondary">Last Name</label>
-                    <input
-                      type="text"
-                      className={`form-control glass-input ${profileErrors.last_name ? 'is-invalid' : ''}`}
-                      placeholder="Doe"
-                      {...registerProfile('last_name', { required: 'Last name is required' })}
-                    />
-                    {profileErrors.last_name && (
-                      <div className="text-danger fs-7 mt-1" style={{ fontSize: '0.8rem' }}>{profileErrors.last_name.message}</div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="row">
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label fw-semibold text-secondary">Phone Number</label>
-                    <input
-                      type="text"
-                      className="form-control glass-input"
-                      placeholder="+1234567890"
-                      {...registerProfile('phone_number')}
-                    />
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label fw-semibold text-secondary">Change Profile Image</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="form-control glass-input"
-                      onChange={handleImageChange}
-                    />
-                  </div>
-                </div>
-
-                <button type="submit" className="btn btn-glow mt-2" disabled={submittingProfile}>
-                  {submittingProfile ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                      Saving...
-                    </>
-                  ) : (
-                    'Save Details'
-                  )}
-                </button>
-              </form>
-            </div>
-          </div>
-
-          {/* Change Password Form */}
-          <div className="col-12">
-            <div className="glass-panel p-4">
-              <h4 className="fw-bold mb-3"><i className="bi bi-shield-key me-2"></i>Change Security Password</h4>
-              <form onSubmit={handlePasswordSubmit(onPasswordSubmit)}>
-                <div className="mb-3">
-                  <label className="form-label fw-semibold text-secondary">Current Password</label>
-                  <input
-                    type="password"
-                    className={`form-control glass-input ${passwordErrors.old_password ? 'is-invalid' : ''}`}
-                    placeholder="••••••••"
-                    {...registerPassword('old_password', { required: 'Current password is required' })}
-                  />
-                  {passwordErrors.old_password && (
-                    <div className="text-danger fs-7 mt-1" style={{ fontSize: '0.8rem' }}>{passwordErrors.old_password.message}</div>
-                  )}
-                </div>
-
-                <div className="row">
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label fw-semibold text-secondary">New Password</label>
-                    <input
-                      type="password"
-                      className={`form-control glass-input ${passwordErrors.new_password ? 'is-invalid' : ''}`}
-                      placeholder="••••••••"
-                      {...registerPassword('new_password', {
-                        required: 'New password is required',
-                        minLength: {
-                          value: 8,
-                          message: 'Must be at least 8 characters long',
-                        },
-                      })}
-                    />
-                    {passwordErrors.new_password && (
-                      <div className="text-danger fs-7 mt-1" style={{ fontSize: '0.8rem' }}>{passwordErrors.new_password.message}</div>
-                    )}
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label fw-semibold text-secondary">Confirm New Password</label>
-                    <input
-                      type="password"
-                      className={`form-control glass-input ${passwordErrors.new_password_confirm ? 'is-invalid' : ''}`}
-                      placeholder="••••••••"
-                      {...registerPassword('new_password_confirm', {
-                        required: 'Please confirm your new password',
-                        validate: (value) => value === newPassword || 'Passwords do not match',
-                      })}
-                    />
-                    {passwordErrors.new_password_confirm && (
-                      <div className="text-danger fs-7 mt-1" style={{ fontSize: '0.8rem' }}>{passwordErrors.new_password_confirm.message}</div>
-                    )}
-                  </div>
-                </div>
-
-                <button type="submit" className="btn btn-glow mt-2" disabled={submittingPassword}>
-                  {submittingPassword ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                      Updating Password...
-                    </>
-                  ) : (
-                    'Update Password'
-                  )}
-                </button>
-              </form>
-            </div>
-          </div>
+      {/* Empty state */}
+      {noData ? (
+        <div className="card-panel">
+          <EmptyState navigate={navigate} />
         </div>
-      </div>
+      ) : (
+        <>
+          {/* ── Row 1: KPI Cards ────────────────────────────────── */}
+          <div className="row g-3 mb-4">
+            <div className="col-6 col-md-3">
+              <KPICard
+                title="Total Revenue"
+                value={fmtCurrency(summary?.total_revenue || 0)}
+                subtitle={`${summary?.total_orders || 0} orders`}
+                icon="bi-currency-rupee"
+                color="#f5c518"
+                trend={summary?.revenue_change_pct}
+                loading={loadingMap.summary}
+              />
+            </div>
+            <div className="col-6 col-md-3">
+              <KPICard
+                title="Total Profit"
+                value={fmtCurrency(summary?.total_profit || 0)}
+                subtitle="Net profit"
+                icon="bi-graph-up-arrow"
+                color="#22c55e"
+                trend={summary?.profit_change_pct}
+                loading={loadingMap.summary}
+              />
+            </div>
+            <div className="col-6 col-md-3">
+              <KPICard
+                title="Total Orders"
+                value={(summary?.total_orders || 0).toLocaleString()}
+                subtitle={`${summary?.unique_products || 0} products`}
+                icon="bi-bag-check-fill"
+                color="#6366f1"
+                trend={summary?.orders_change_pct}
+                loading={loadingMap.summary}
+              />
+            </div>
+            <div className="col-6 col-md-3">
+              <KPICard
+                title="Customers"
+                value={(summary?.unique_customers || 0).toLocaleString()}
+                subtitle={`Avg: ${fmtCurrency(summary?.avg_order_value || 0)}/order`}
+                icon="bi-people-fill"
+                color="#06b6d4"
+                loading={loadingMap.summary}
+              />
+            </div>
+          </div>
+
+          {/* ── Row 2: Revenue Trend + Category ─────────────────── */}
+          <div className="row g-3 mb-4">
+            <div className="col-lg-8">
+              <div className="card-panel p-4 h-100">
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Revenue & Profit Trend</div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                      {PERIOD_OPTIONS.find(o => o.value === period)?.label}
+                    </div>
+                  </div>
+                  {summary?.best_product && (
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'right' }}>
+                      <i className="bi bi-trophy-fill me-1" style={{ color: '#f5c518' }}></i>
+                      Best: <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{summary.best_product}</span>
+                    </div>
+                  )}
+                </div>
+                <RevenueChart data={trend} loading={loadingMap.trend} />
+              </div>
+            </div>
+            <div className="col-lg-4">
+              <div className="card-panel p-4 h-100">
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: 4 }}>Sales by Category</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 12 }}>Revenue share per category</div>
+                <CategoryChart data={categories} loading={loadingMap.categories} />
+              </div>
+            </div>
+          </div>
+
+          {/* ── Row 3: Top Products + Recent Sales ──────────────── */}
+          <div className="row g-3 mb-4">
+            <div className="col-lg-7">
+              <div className="card-panel p-4 h-100">
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: 4 }}>Top 10 Products</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 12 }}>Ranked by selected metric</div>
+                <TopProductsChart
+                  data={topProducts}
+                  loading={loadingMap.products}
+                  onSortChange={handleProductSortChange}
+                />
+              </div>
+            </div>
+            <div className="col-lg-5">
+              <div className="card-panel p-4 h-100">
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Recent Sales</div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Latest 10 transactions</div>
+                  </div>
+                </div>
+                <RecentSalesTable data={recentSales} loading={loadingMap.recent} />
+              </div>
+            </div>
+          </div>
+
+          {/* ── Row 4: Top Customers + Monthly Summary ───────────── */}
+          <div className="row g-3 mb-4">
+            <div className="col-lg-4">
+              <div className="card-panel p-4 h-100">
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: 4 }}>Top Customers</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 12 }}>By total spend</div>
+                <TopCustomersTable data={topCustomers} loading={loadingMap.customers} />
+              </div>
+            </div>
+            <div className="col-lg-8">
+              <div className="card-panel p-4 h-100">
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: 4 }}>Monthly Summary</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 12 }}>Month-by-month performance breakdown</div>
+                <MonthlySummaryTable data={monthlySummary} loading={loadingMap.monthly} />
+              </div>
+            </div>
+          </div>
+
+          {/* ── Row 5: Business Snapshot ──────────────────────────── */}
+          {summary && (
+            <div className="card-panel p-4"
+              style={{ background: 'linear-gradient(135deg, #fefce8 0%, #fff 60%)', border: '1px solid #fde68a' }}>
+              <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: 16 }}>
+                <i className="bi bi-lightning-fill me-2" style={{ color: '#ca8a04' }}></i>
+                Business Snapshot
+              </div>
+              <div className="row g-4">
+                {[
+                  { label: 'Best Product',   value: summary.best_product  || '—', icon: 'bi-trophy',       color: '#ca8a04' },
+                  { label: 'Best Category',  value: summary.best_category || '—', icon: 'bi-tag',          color: '#6366f1' },
+                  { label: 'Avg Order Value',value: fmtCurrency(summary.avg_order_value), icon: 'bi-receipt', color: '#22c55e' },
+                  { label: 'Total Qty Sold', value: (summary.total_quantity || 0).toLocaleString(), icon: 'bi-boxes', color: '#ef4444' },
+                  { label: 'Last Sale Date', value: summary.last_sale_date || '—', icon: 'bi-calendar-check', color: '#06b6d4' },
+                  { label: 'Unique Products',value: summary.unique_products || 0, icon: 'bi-box-seam', color: '#a855f7' },
+                ].map(({ label, value, icon, color }) => (
+                  <div key={label} className="col-6 col-md-4 col-lg-2">
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                      <div style={{ width: 42, height: 42, borderRadius: 12, background: color + '18', border: `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
+                        <i className={`bi ${icon}`} style={{ color, fontSize: '1.1rem' }}></i>
+                      </div>
+                      <div style={{ fontWeight: 700, fontSize: '0.875rem', marginBottom: 2, wordBreak: 'break-word' }}>{value}</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{label}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };
