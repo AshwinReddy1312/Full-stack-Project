@@ -6,10 +6,9 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const NAV_ITEMS = [
   { label: 'Dashboard',   icon: 'bi-grid-fill',                    path: '/',             exact: true },
-  { label: 'Products',    icon: 'bi-box-seam-fill',                path: '/products'                  },
-  { label: 'Customers',   icon: 'bi-people-fill',                  path: '/customers'                 },
   { label: 'Data Import', icon: 'bi-file-earmark-arrow-up-fill',   path: '/uploads'                   },
   { label: 'AI Insights', icon: 'bi-stars',                        path: '/ai-insights'               },
+  { label: 'AI Chat',     icon: 'bi-chat-dots-fill',               path: '/ai-chat'                   },
 ];
 
 const MainLayout = () => {
@@ -52,6 +51,7 @@ const MainLayout = () => {
     if (p === '/uploads/new')             return { title: 'Import CSV',       sub: 'Upload and process business data' };
     if (p.startsWith('/uploads/'))        return { title: 'Upload Detail',    sub: 'View import summary' };
     if (p === '/ai-insights')             return { title: 'AI Insights',      sub: 'GPT-4o powered business analysis' };
+    if (p === '/ai-chat')                 return { title: 'AI Chat Assistant', sub: 'Ask anything about your business data' };
     return { title: 'AI Dashboard', sub: '' };
   };
 
