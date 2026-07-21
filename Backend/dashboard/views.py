@@ -397,3 +397,125 @@ class MonthlySummaryView(APIView):
             prev_rev = rev
 
         return ok({'months': months})
+
+
+class ProductAnalyticsView(APIView):
+    """
+    GET /api/dashboard/product-analytics/
+    Returns full product analytics: KPIs + all products ranked + AI-ready insights data.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from collections import defaultdict
+        qs = SalesRecord.objects.all()
+
+        # All products with sales data
+        raw = list(
+            qs.values('product_name', 'category')
+              .annotate(
+                  revenue=Sum('total_amount'),
+                  profit=Sum('profit'),
+                  quantity=Sum('quantity'),
+                  orders=Count('id'),
+                  cost_sum=Sum('cost_price'),
+                  sell_sum=Sum('selling_price'),
+              )
+              .order_by('-revenue')
+        )
+
+        total_revenue = sum(_format_decimal(p['revenue']) for p in raw)
+        total_profit  = sum(_format_decimal(p['profit'])  for p in raw)
+        total_products = len(raw)
+
+        products = []
+        for p in raw:
+            cost = _format_decimal(p['cost_sum'])
+            sell = _format_decimal(p['sell_sum'])
+            margin = round(((sell - cost) / cost) * 100, 1) if cost > 0 else 0
+            rev = _format_decimal(p['revenue'])
+            products.append({
+                'product_name': p['product_name'],
+                'category':     p['category'] or 'Uncategorised',
+                'revenue':      rev,
+                'profit':       _format_decimal(p['profit']),
+                'quantity':     p['quantity'],
+                'orders':       p['orders'],
+                'avg_price':    round(sell / p['orders'], 2) if p['orders'] else 0,
+                'profit_margin': margin,
+                'revenue_share': round((rev / total_revenue) * 100, 1) if total_revenue else 0,
+            })
+
+        avg_margin = round(sum(p['profit_margin'] for p in products) / len(products), 1) if products else 0
+
+        best  = products[0]  if products else None
+        worst = products[-1] if len(products) > 1 else None
+
+        return ok({
+            'kpis': {
+                'total_products':   total_products,
+                'total_revenue':    total_revenue,
+                'total_profit':     total_profit,
+                'avg_profit_margin': avg_margin,
+                'best_product':     best['product_name'] if best else None,
+                'best_revenue':     best['revenue']      if best else 0,
+            },
+            'products': products,
+            'best_product':  best,
+            'worst_product': worst,
+        })
+
+
+class CustomerAnalyticsView(APIView):
+    """
+    GET /api/dashboard/customer-analytics/
+    Returns full customer analytics: KPIs + all customers + repeat info.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        qs = SalesRecord.objects.all()
+
+        raw = list(
+            qs.values('customer_name')
+              .annotate(
+                  total_spent=Sum('total_amount'),
+                  total_profit=Sum('profit'),
+                  orders=Count('id'),
+                  total_qty=Sum('quantity'),
+                  last_purchase=Max('sale_date'),
+              )
+              .order_by('-total_spent')
+        )
+
+        total_customers = len(raw)
+        repeat_customers = [c for c in raw if c['orders'] > 1]
+        total_spent_all = sum(_format_decimal(c['total_spent']) for c in raw)
+        avg_spending = round(total_spent_all / total_customers, 2) if total_customers else 0
+        top_customer = raw[0] if raw else None
+
+        customers = [
+            {
+                'customer_name':  c['customer_name'],
+                'total_spent':    _format_decimal(c['total_spent']),
+                'total_profit':   _format_decimal(c['total_profit']),
+                'orders':         c['orders'],
+                'total_qty':      c['total_qty'],
+                'last_purchase':  str(c['last_purchase']) if c['last_purchase'] else None,
+                'is_repeat':      c['orders'] > 1,
+                'spend_share':    round((_format_decimal(c['total_spent']) / total_spent_all) * 100, 1) if total_spent_all else 0,
+            }
+            for c in raw
+        ]
+
+        return ok({
+            'kpis': {
+                'total_customers':    total_customers,
+                'repeat_customers':   len(repeat_customers),
+                'repeat_pct':         round((len(repeat_customers) / total_customers) * 100, 1) if total_customers else 0,
+                'top_customer':       top_customer['customer_name'] if top_customer else None,
+                'top_customer_spent': _format_decimal(top_customer['total_spent']) if top_customer else 0,
+                'avg_spending':       avg_spending,
+            },
+            'customers': customers,
+        })
