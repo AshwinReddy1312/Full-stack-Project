@@ -4,19 +4,9 @@ import { useAuth } from '../context/AuthContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-// ── Sidebar nav items ──────────────────────────────────────────────────────
 const NAV_ITEMS = [
-  {
-    label: 'Dashboard',
-    icon: 'bi-grid-1x2-fill',
-    path: '/',
-    exact: true,
-  },
-  {
-    label: 'Products',
-    icon: 'bi-box-seam-fill',
-    path: '/products',
-  },
+  { label: 'Dashboard', icon: 'bi-grid-fill',     path: '/',         exact: true },
+  { label: 'Products',  icon: 'bi-box-seam-fill', path: '/products'              },
 ];
 
 const MainLayout = () => {
@@ -30,154 +20,170 @@ const MainLayout = () => {
     navigate('/login');
   };
 
-  const getProfileImage = () => {
+  const getAvatar = () => {
     if (user?.profile_image) {
       return user.profile_image.startsWith('http')
         ? user.profile_image
         : `${API_URL}${user.profile_image}`;
     }
-    return 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent((user?.first_name || '') + ' ' + (user?.last_name || ''))}&background=f5c518&color=1a1a1a&bold=true`;
   };
 
-  const isActive = (item) => {
-    if (item.exact) return location.pathname === item.path;
-    return location.pathname === item.path || location.pathname.startsWith(item.path + '/');
-  };
+  const isActive = (item) =>
+    item.exact
+      ? location.pathname === item.path
+      : location.pathname === item.path || location.pathname.startsWith(item.path + '/');
 
-  // Page title derived from current path
-  const getPageTitle = () => {
-    const path = location.pathname;
-    if (path === '/')                           return { title: 'Dashboard',        sub: 'Workspace overview' };
-    if (path === '/products')                   return { title: 'Products',         sub: 'Manage your product catalogue' };
-    if (path === '/products/add')               return { title: 'Add Product',      sub: 'Create a new product' };
-    if (path.startsWith('/products/edit/'))     return { title: 'Edit Product',     sub: 'Update product details' };
-    if (path.startsWith('/products/'))         return { title: 'Product Details',  sub: 'View product information' };
+  const getPageMeta = () => {
+    const p = location.pathname;
+    if (p === '/')                       return { title: 'Dashboard',       sub: 'Welcome back, ' + (user?.first_name || '') };
+    if (p === '/products')               return { title: 'Products',        sub: 'Manage your product catalogue' };
+    if (p === '/products/add')           return { title: 'Add Product',     sub: 'Create a new product' };
+    if (p.startsWith('/products/edit/')) return { title: 'Edit Product',    sub: 'Update product details' };
+    if (p.startsWith('/products/'))      return { title: 'Product Details', sub: 'View product information' };
     return { title: 'AI Dashboard', sub: '' };
   };
 
-  const { title, sub } = getPageTitle();
+  const { title, sub } = getPageMeta();
 
   return (
     <div className="dashboard-container">
-      {/* Background spheres */}
-      <div className="bg-glow-sphere-1" style={{ opacity: 0.5 }}></div>
-      <div className="bg-glow-sphere-2" style={{ opacity: 0.5 }}></div>
 
-      {/* ── Mobile overlay ───────────────────────────────────── */}
+      {/* ── Mobile overlay ─────────────────────────────── */}
       {sidebarOpen && (
         <div
           className="position-fixed top-0 start-0 w-100 h-100"
-          style={{ background: 'rgba(0,0,0,0.6)', zIndex: 99 }}
+          style={{ background: 'rgba(0,0,0,0.25)', zIndex: 199, backdropFilter: 'blur(2px)' }}
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* ── Sidebar ──────────────────────────────────────────── */}
-      <aside
-        className="sidebar-panel"
-        style={
-          sidebarOpen
-            ? { transform: 'translateX(0)' }
-            : {}
-        }
-      >
+      {/* ── Sidebar ──────────────────────────────────────── */}
+      <aside className={`sidebar-panel ${sidebarOpen ? 'open' : ''}`}>
+
         {/* Logo */}
-        <div className="d-flex align-items-center justify-content-center gap-2 my-4 px-3">
+        <div className="sidebar-logo d-flex align-items-center gap-2">
           <div
-            className="d-flex align-items-center justify-content-center rounded-3"
-            style={{ width: '38px', height: '38px', background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.3)' }}
+            style={{
+              width: 34, height: 34,
+              background: 'var(--accent)',
+              borderRadius: 10,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '1rem', fontWeight: 800, color: '#1a1a1a',
+              flexShrink: 0,
+            }}
           >
-            <i className="bi bi-cpu-fill" style={{ color: 'var(--accent-secondary)', fontSize: '1.1rem' }}></i>
+            AI
           </div>
-          <span className="fs-5 fw-bold text-gradient">AI Dashboard</span>
+          <span style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>
+            BizDashboard
+          </span>
         </div>
 
-        {/* Nav section label */}
-        <div className="px-4 mb-2">
-          <small className="text-secondary fw-semibold" style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            Main Menu
-          </small>
+        {/* Nav */}
+        <div className="flex-grow-1 pt-2">
+          <div className="sidebar-section-label">Main Menu</div>
+          <nav>
+            {NAV_ITEMS.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`sidebar-link ${isActive(item) ? 'active' : ''}`}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <i className={`bi ${item.icon}`}></i>
+                {item.label}
+              </Link>
+            ))}
+          </nav>
         </div>
-
-        {/* Nav links */}
-        <nav className="flex-grow-1 px-2">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`sidebar-link ${isActive(item) ? 'active' : ''}`}
-              onClick={() => setSidebarOpen(false)}
-            >
-              <i className={`bi ${item.icon}`}></i>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
 
         {/* User footer */}
-        <div className="p-3 border-top mt-auto" style={{ borderColor: 'rgba(255,255,255,0.06) !important' }}>
-          <div className="d-flex align-items-center mb-3 px-2 gap-3">
+        <div style={{ padding: '1rem', borderTop: '1px solid var(--border)' }}>
+          <div className="d-flex align-items-center gap-3 mb-3">
             <img
-              src={getProfileImage()}
+              src={getAvatar()}
               alt="Profile"
-              className="rounded-circle flex-shrink-0"
-              style={{ width: '40px', height: '40px', objectFit: 'cover', border: '2px solid rgba(99,102,241,0.4)' }}
+              className="avatar avatar-sm flex-shrink-0"
             />
             <div className="overflow-hidden">
-              <div className="fw-semibold text-truncate" style={{ fontSize: '0.875rem' }}>
+              <div style={{ fontWeight: 600, fontSize: '0.82rem', color: 'var(--text-primary)' }} className="text-truncate">
                 {user?.first_name} {user?.last_name}
               </div>
-              <div className="text-secondary text-truncate" style={{ fontSize: '0.75rem' }}>
-                {user?.role}
-              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{user?.role}</div>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="btn btn-outline-danger w-100 rounded-3 py-2"
-            style={{ fontSize: '0.85rem', borderColor: 'rgba(239,68,68,0.3)' }}
+            className="btn btn-ghost w-100 d-flex align-items-center justify-content-center gap-2"
+            style={{ fontSize: '0.82rem', color: '#dc2626', borderColor: '#fecaca' }}
           >
-            <i className="bi bi-box-arrow-right me-2"></i>Logout
+            <i className="bi bi-box-arrow-right"></i>
+            Logout
           </button>
         </div>
       </aside>
 
-      {/* ── Main content area ─────────────────────────────────── */}
-      <div className="d-flex flex-column flex-grow-1 overflow-hidden">
-        {/* Top header */}
+      {/* ── Main wrapper ─────────────────────────────────── */}
+      <div className="main-wrapper">
+
+        {/* Header */}
         <header className="header-panel">
           {/* Mobile hamburger */}
-          <button
-            className="btn btn-sm d-lg-none me-3 rounded-3"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8' }}
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-          >
-            <i className="bi bi-list fs-5"></i>
-          </button>
-
-          <div>
-            <h5 className="mb-0 fw-semibold">{title}</h5>
-            {sub && <small className="text-secondary">{sub}</small>}
+          <div className="d-flex align-items-center gap-3">
+            <button
+              className="btn btn-ghost btn-sm d-lg-none"
+              style={{ padding: '0.4rem 0.6rem' }}
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+            >
+              <i className="bi bi-list fs-5"></i>
+            </button>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)', lineHeight: 1.3 }}>
+                {title}
+              </div>
+              {sub && (
+                <div style={{ fontSize: '0.775rem', color: 'var(--text-muted)' }}>{sub}</div>
+              )}
+            </div>
           </div>
 
+          {/* Right side */}
           <div className="d-flex align-items-center gap-3">
-            <div className="me-1 text-end d-none d-sm-block">
-              <div className="fw-semibold" style={{ fontSize: '0.875rem' }}>
-                {user?.first_name} {user?.last_name}
-              </div>
+            {/* Notification bell */}
+            <button
+              className="btn btn-ghost"
+              style={{ padding: '0.45rem 0.65rem', position: 'relative', borderRadius: 10 }}
+            >
+              <i className="bi bi-bell" style={{ fontSize: '1rem' }}></i>
               <span
-                className="badge rounded-pill px-2 py-1"
-                style={{ fontSize: '0.7rem', background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.25)' }}
-              >
-                {user?.role}
-              </span>
+                style={{
+                  position: 'absolute', top: 6, right: 7,
+                  width: 7, height: 7, borderRadius: '50%',
+                  background: '#ef4444', border: '1.5px solid white',
+                }}
+              ></span>
+            </button>
+
+            {/* User pill */}
+            <div
+              className="d-flex align-items-center gap-2"
+              style={{
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border)',
+                borderRadius: 999,
+                padding: '0.3rem 0.75rem 0.3rem 0.3rem',
+                cursor: 'pointer',
+              }}
+            >
+              <img src={getAvatar()} alt="Avatar" className="avatar" style={{ width: 30, height: 30, borderRadius: '50%' }} />
+              <div className="d-none d-sm-block">
+                <div style={{ fontWeight: 600, fontSize: '0.8rem', lineHeight: 1.2 }}>
+                  {user?.first_name} {user?.last_name}
+                </div>
+                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{user?.role}</div>
+              </div>
             </div>
-            <img
-              src={getProfileImage()}
-              alt="Avatar"
-              className="rounded-circle"
-              style={{ width: '40px', height: '40px', objectFit: 'cover', border: '2px solid rgba(99,102,241,0.4)' }}
-            />
           </div>
         </header>
 
