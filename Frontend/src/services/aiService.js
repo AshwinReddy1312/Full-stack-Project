@@ -30,3 +30,15 @@ export const getLatestReport = () =>
 /** Delete a report. */
 export const deleteReport = (id) =>
   api.delete(`${BASE}/reports/${id}/`);
+
+/**
+ * Send a chat message with full conversation history.
+ * @param {string} message  - new user message
+ * @param {Array}  history  - [{role, content}, ...] previous messages
+ */
+export const sendChatMessage = (message, history = []) =>
+  api.post(`${BASE}/chat/`, { message, history });
+
+/** Generate executive business summary. */
+export const generateExecutiveSummary = () =>
+  api.post(`${BASE}/executive-summary/`);

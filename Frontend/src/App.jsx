@@ -34,6 +34,9 @@ import UploadHistory  from './pages/Sales/UploadHistory';
 // AI Insights
 import AIInsights from './pages/AIInsights';
 
+// AI Chat
+import AIChat from './pages/AIChat';
+
 function App() {
   return (
     <AuthProvider>
@@ -68,7 +71,10 @@ function App() {
               <Route path="/uploads/:id"         element={<UploadHistory />} />
 
               {/* AI Insights */}
-              <Route path="/ai-insights"         element={<AIInsights />} />
+              <Route path="/ai-insights" element={<AIInsights />} />
+
+              {/* AI Chat */}
+              <Route path="/ai-chat"     element={<AIChat />} />
             </Route>
           </Route>
 

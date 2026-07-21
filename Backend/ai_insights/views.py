@@ -178,3 +178,65 @@ class LatestReportView(APIView):
         if not report:
             return ok('No reports yet.', None)
         return ok('Latest report retrieved.', _serialise_report(report))
+
+
+# ── Chat Views ────────────────────────────────────────────────────────────────
+
+class ChatMessageView(APIView):
+    """
+    POST /api/ai/chat/
+    Body: {
+        "message": "Which product sold the most?",
+        "history": [ {"role": "user", "content": "..."}, {"role": "assistant", "content": "..."} ]
+    }
+    Returns the AI response as a plain string.
+    history is the full conversation so far (excluding the new message).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        from .chat_engine import chat_with_data
+
+        message = request.data.get('message', '').strip()
+        history = request.data.get('history', [])
+
+        if not message:
+            return err('Message cannot be empty.')
+
+        # Validate history shape
+        clean_history = []
+        for item in history:
+            if isinstance(item, dict) and item.get('role') in ('user', 'assistant') and item.get('content'):
+                clean_history.append({'role': item['role'], 'content': str(item['content'])})
+
+        # Append the new user message
+        clean_history.append({'role': 'user', 'content': message})
+
+        try:
+            result = chat_with_data(messages=clean_history, user=request.user)
+            return ok('Response generated.', {
+                'reply':    result['reply'],
+                'has_data': result['has_data'],
+            })
+        except Exception as e:
+            return err(f'AI chat failed: {str(e)}', http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ExecutiveSummaryView(APIView):
+    """
+    POST /api/ai/executive-summary/
+    Generates a structured executive business summary from the uploaded data.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        from .chat_engine import generate_executive_summary
+
+        try:
+            result = generate_executive_summary(user=request.user)
+            return ok('Executive summary generated.', {
+                'reply':    result['reply'],
+                'has_data': result['has_data'],
+            })
+        except Exception as e:
+            return err(f'Summary generation failed: {str(e)}', http_status=status.HTTP_500_INTERNAL_SERVER_ERROR)
