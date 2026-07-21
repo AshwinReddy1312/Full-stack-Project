@@ -39,12 +39,14 @@ const ChatMessage = ({ role, content, timestamp, onCopy }) => {
       <div
         style={{
           width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
-          background: isUser ? 'var(--accent)' : '#1e1e2e',
+          background: isUser
+            ? 'linear-gradient(135deg, #1a56db 0%, #0ea5e9 100%)'
+            : 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontWeight: 700, fontSize: '0.78rem',
-          color: isUser ? '#1a1a1a' : '#f5c518',
-          border: isUser ? '2px solid var(--accent)' : '2px solid #f5c51830',
-          boxShadow: isUser ? '0 2px 8px rgba(245,197,24,0.25)' : '0 2px 8px rgba(0,0,0,0.15)',
+          color: '#ffffff',
+          border: isUser ? '2px solid #1a56db' : '2px solid #1e293b',
+          boxShadow: isUser ? '0 2px 8px rgba(26,86,219,0.3)' : '0 2px 8px rgba(0,0,0,0.15)',
         }}
       >
         {isUser ? 'You' : <i className="bi bi-stars"></i>}
@@ -57,11 +59,11 @@ const ChatMessage = ({ role, content, timestamp, onCopy }) => {
             padding: '12px 16px',
             borderRadius: isUser ? '18px 4px 18px 18px' : '4px 18px 18px 18px',
             background: isUser
-              ? 'var(--accent)'
+              ? 'linear-gradient(135deg, #1a56db 0%, #0ea5e9 100%)'
               : 'var(--bg-card)',
             border: isUser ? 'none' : '1px solid var(--border)',
             boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-            color: isUser ? '#1a1a1a' : 'var(--text-primary)',
+            color: isUser ? '#ffffff' : 'var(--text-primary)',
             fontSize: '0.875rem',
             lineHeight: 1.6,
             wordBreak: 'break-word',

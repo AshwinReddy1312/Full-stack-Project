@@ -151,7 +151,7 @@ const AIChat = () => {
       <div className="d-flex align-items-center justify-content-between mb-3">
         <div>
           <h4 style={{ fontWeight: 800, marginBottom: 2 }}>
-            <i className="bi bi-chat-dots-fill me-2" style={{ color: '#f5c518' }}></i>
+            <i className="bi bi-chat-dots-fill me-2" style={{ color: '#1a56db' }}></i>
             AI Business Analyst
           </h4>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', margin: 0 }}>
@@ -201,11 +201,13 @@ const AIChat = () => {
             <div style={{ textAlign: 'center', paddingTop: '2rem', paddingBottom: '1rem' }}>
               <div style={{
                 width: 72, height: 72, borderRadius: '50%',
-                background: '#1e1e2e', border: '2px solid #f5c51840',
+                background: 'linear-gradient(135deg, #1a56db 0%, #0ea5e9 100%)',
+                border: '2px solid #bfdbfe',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 margin: '0 auto 1rem', fontSize: '1.8rem',
+                boxShadow: '0 4px 20px rgba(26,86,219,0.25)',
               }}>
-                <i className="bi bi-stars" style={{ color: '#f5c518' }}></i>
+                <i className="bi bi-stars" style={{ color: '#fff' }}></i>
               </div>
               <h5 style={{ fontWeight: 800, marginBottom: 6 }}>Ask Me Anything About Your Business</h5>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', maxWidth: 420, margin: '0 auto 1.5rem' }}>
@@ -326,13 +328,13 @@ const AIChat = () => {
               style={{
                 flex: 1, resize: 'none', overflow: 'hidden',
                 background: 'var(--bg-secondary)',
-                border: `1px solid ${input ? 'var(--accent)' : 'var(--border)'}`,
+                border: `1px solid ${input ? '#1a56db' : 'var(--border)'}`,
                 borderRadius: 14, padding: '12px 16px',
                 fontSize: '0.875rem', color: 'var(--text-primary)',
                 outline: 'none', lineHeight: 1.5,
                 transition: 'border-color 0.2s',
                 fontFamily: 'inherit',
-                boxShadow: input ? '0 0 0 3px rgba(245,197,24,0.12)' : 'none',
+                boxShadow: input ? '0 0 0 3px rgba(26,86,219,0.12)' : 'none',
               }}
             />
             <button
@@ -340,13 +342,13 @@ const AIChat = () => {
               disabled={!input.trim() || typing}
               style={{
                 width: 48, height: 48, borderRadius: 14, border: 'none',
-                background: input.trim() && !typing ? 'var(--accent)' : 'var(--bg-secondary)',
-                color: input.trim() && !typing ? '#1a1a1a' : 'var(--text-muted)',
+                background: input.trim() && !typing ? 'linear-gradient(135deg, #1a56db 0%, #0ea5e9 100%)' : 'var(--bg-secondary)',
+                color: input.trim() && !typing ? '#ffffff' : 'var(--text-muted)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: input.trim() && !typing ? 'pointer' : 'not-allowed',
                 fontSize: '1.1rem', flexShrink: 0,
                 transition: 'all 0.2s',
-                boxShadow: input.trim() ? '0 2px 8px rgba(245,197,24,0.3)' : 'none',
+                boxShadow: input.trim() ? '0 2px 8px rgba(26,86,219,0.3)' : 'none',
               }}
             >
               {typing

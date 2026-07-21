@@ -1,23 +1,16 @@
-/**
- * TypingIndicator.jsx
- * -------------------
- * Animated three-dot typing indicator shown while the AI is generating a response.
- */
 import React from 'react';
 
 const TypingIndicator = () => (
   <div className="d-flex gap-3 mb-4 align-items-flex-start">
-    {/* AI avatar */}
     <div style={{
       width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
-      background: '#1e1e2e', border: '2px solid #f5c51830',
+      background: 'linear-gradient(135deg, #1a56db 0%, #0ea5e9 100%)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      color: '#f5c518', fontSize: '0.9rem',
+      color: '#fff', fontSize: '0.9rem',
+      boxShadow: '0 2px 8px rgba(26,86,219,0.3)',
     }}>
       <i className="bi bi-stars"></i>
     </div>
-
-    {/* Dots bubble */}
     <div style={{
       padding: '14px 18px',
       borderRadius: '4px 18px 18px 18px',
@@ -27,16 +20,13 @@ const TypingIndicator = () => (
       display: 'flex', alignItems: 'center', gap: 5,
     }}>
       {[0, 1, 2].map(i => (
-        <span
-          key={i}
-          style={{
-            width: 7, height: 7, borderRadius: '50%',
-            background: 'var(--accent)',
-            display: 'inline-block',
-            animation: 'typing-bounce 1.2s infinite ease-in-out',
-            animationDelay: `${i * 0.2}s`,
-          }}
-        />
+        <span key={i} style={{
+          width: 7, height: 7, borderRadius: '50%',
+          background: 'linear-gradient(135deg, #1a56db, #0ea5e9)',
+          display: 'inline-block',
+          animation: 'typing-bounce 1.2s infinite ease-in-out',
+          animationDelay: `${i * 0.2}s`,
+        }} />
       ))}
       <style>{`
         @keyframes typing-bounce {

@@ -124,7 +124,8 @@ const TopCustomersTable = ({ data = [], loading }) => {
             style={{ borderBottom: idx < data.length - 1 ? '1px solid var(--border)' : 'none' }}>
             <div style={{
               width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
-              background: 'var(--accent)', color: '#1a1a1a',
+              background: 'linear-gradient(135deg, #1a56db 0%, #0ea5e9 100%)',
+              color: '#fff',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontWeight: 700, fontSize: '0.78rem',
             }}>
@@ -249,8 +250,8 @@ const Dashboard = () => {
                 style={{
                   padding: '4px 12px', borderRadius: 7, fontSize: '0.75rem', fontWeight: 600,
                   border: 'none', cursor: 'pointer', transition: 'all 0.15s',
-                  background: period === opt.value ? 'var(--accent)' : 'transparent',
-                  color: period === opt.value ? '#1a1a1a' : 'var(--text-muted)',
+                  background: period === opt.value ? 'var(--accent-gradient)' : 'transparent',
+                  color: period === opt.value ? '#ffffff' : 'var(--text-muted)',
                 }}
               >
                 {opt.label}
@@ -279,7 +280,7 @@ const Dashboard = () => {
                 value={fmtCurrency(summary?.total_revenue || 0)}
                 subtitle={`${summary?.total_orders || 0} orders`}
                 icon="bi-currency-rupee"
-                color="#f5c518"
+                color="#1a56db"
                 trend={summary?.revenue_change_pct}
                 loading={loadingMap.summary}
               />
@@ -301,7 +302,7 @@ const Dashboard = () => {
                 value={(summary?.total_orders || 0).toLocaleString()}
                 subtitle={`${summary?.unique_products || 0} products`}
                 icon="bi-bag-check-fill"
-                color="#6366f1"
+                color="#0ea5e9"
                 trend={summary?.orders_change_pct}
                 loading={loadingMap.summary}
               />
@@ -312,7 +313,7 @@ const Dashboard = () => {
                 value={(summary?.unique_customers || 0).toLocaleString()}
                 subtitle={`Avg: ${fmtCurrency(summary?.avg_order_value || 0)}/order`}
                 icon="bi-people-fill"
-                color="#06b6d4"
+                color="#6366f1"
                 loading={loadingMap.summary}
               />
             </div>
@@ -395,19 +396,19 @@ const Dashboard = () => {
           {/* ── Row 5: Business Snapshot ──────────────────────────── */}
           {summary && (
             <div className="card-panel p-4"
-              style={{ background: 'linear-gradient(135deg, #fefce8 0%, #fff 60%)', border: '1px solid #fde68a' }}>
+              style={{ background: 'linear-gradient(135deg, #eff6ff 0%, #fff 60%)', border: '1px solid #bfdbfe' }}>
               <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: 16 }}>
-                <i className="bi bi-lightning-fill me-2" style={{ color: '#ca8a04' }}></i>
+                <i className="bi bi-lightning-fill me-2" style={{ color: '#1a56db' }}></i>
                 Business Snapshot
               </div>
               <div className="row g-4">
                 {[
-                  { label: 'Best Product',   value: summary.best_product  || '—', icon: 'bi-trophy',       color: '#ca8a04' },
-                  { label: 'Best Category',  value: summary.best_category || '—', icon: 'bi-tag',          color: '#6366f1' },
-                  { label: 'Avg Order Value',value: fmtCurrency(summary.avg_order_value), icon: 'bi-receipt', color: '#22c55e' },
-                  { label: 'Total Qty Sold', value: (summary.total_quantity || 0).toLocaleString(), icon: 'bi-boxes', color: '#ef4444' },
-                  { label: 'Last Sale Date', value: summary.last_sale_date || '—', icon: 'bi-calendar-check', color: '#06b6d4' },
-                  { label: 'Unique Products',value: summary.unique_products || 0, icon: 'bi-box-seam', color: '#a855f7' },
+                  { label: 'Best Product',    value: summary.best_product  || '—', icon: 'bi-trophy',         color: '#1a56db' },
+                  { label: 'Best Category',   value: summary.best_category || '—', icon: 'bi-tag',            color: '#0ea5e9' },
+                  { label: 'Avg Order Value', value: fmtCurrency(summary.avg_order_value), icon: 'bi-receipt', color: '#22c55e' },
+                  { label: 'Total Qty Sold',  value: (summary.total_quantity || 0).toLocaleString(), icon: 'bi-boxes', color: '#6366f1' },
+                  { label: 'Last Sale Date',  value: summary.last_sale_date || '—', icon: 'bi-calendar-check', color: '#0891b2' },
+                  { label: 'Unique Products', value: summary.unique_products || 0, icon: 'bi-box-seam',        color: '#a855f7' },
                 ].map(({ label, value, icon, color }) => (
                   <div key={label} className="col-6 col-md-4 col-lg-2">
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>

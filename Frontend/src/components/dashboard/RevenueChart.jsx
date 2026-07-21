@@ -54,15 +54,15 @@ const RevenueChart = ({ data = [], loading }) => {
       <AreaChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%"  stopColor="#f5c518" stopOpacity={0.35} />
-            <stop offset="95%" stopColor="#f5c518" stopOpacity={0.02} />
+            <stop offset="5%"  stopColor="#1a56db" stopOpacity={0.3} />
+            <stop offset="95%" stopColor="#1a56db" stopOpacity={0.02} />
           </linearGradient>
           <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%"  stopColor="#22c55e" stopOpacity={0.3} />
             <stop offset="95%" stopColor="#22c55e" stopOpacity={0.02} />
           </linearGradient>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e0" vertical={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
         <XAxis
           dataKey="date"
           tick={{ fontSize: 11, fill: '#9ca3af' }}
@@ -86,7 +86,7 @@ const RevenueChart = ({ data = [], loading }) => {
           iconSize={8}
           formatter={(v) => <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{v}</span>}
         />
-        <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#f5c518" strokeWidth={2.5} fill="url(#colorRevenue)" dot={false} />
+        <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#1a56db" strokeWidth={2.5} fill="url(#colorRevenue)" dot={false} />
         <Area type="monotone" dataKey="profit"  name="Profit"  stroke="#22c55e" strokeWidth={2.5} fill="url(#colorProfit)"  dot={false} />
       </AreaChart>
     </ResponsiveContainer>

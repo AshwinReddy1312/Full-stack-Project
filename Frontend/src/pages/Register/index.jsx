@@ -62,7 +62,7 @@ const Register = () => {
           Create Account
         </h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-          Join the AI Business Dashboard workspace
+          Join the <span style={{ background: 'linear-gradient(135deg, #1a56db, #0ea5e9)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontWeight: 700 }}>InsightIQ</span> workspace
         </p>
       </div>
 
@@ -158,7 +158,7 @@ const Register = () => {
 
       <div className="text-center" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
         Already have an account?{' '}
-        <Link to="/login" style={{ color: 'var(--text-primary)', fontWeight: 700, textDecoration: 'none' }}>Sign in</Link>
+        <Link to="/login" style={{ color: 'var(--accent)', fontWeight: 700, textDecoration: 'none' }}>Sign in</Link>
       </div>
     </div>
   );

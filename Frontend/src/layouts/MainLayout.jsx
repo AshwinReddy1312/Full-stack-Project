@@ -30,7 +30,7 @@ const MainLayout = () => {
         ? user.profile_image
         : `${API_URL}${user.profile_image}`;
     }
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent((user?.first_name || '') + ' ' + (user?.last_name || ''))}&background=f5c518&color=1a1a1a&bold=true`;
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent((user?.first_name || '') + ' ' + (user?.last_name || ''))}&background=1a56db&color=ffffff&bold=true`;
   };
 
   const isActive = (item) =>
@@ -79,18 +79,32 @@ const MainLayout = () => {
           <div
             style={{
               width: 34, height: 34,
-              background: 'var(--accent)',
+              background: 'linear-gradient(135deg, #1a56db 0%, #0ea5e9 100%)',
               borderRadius: 10,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '1rem', fontWeight: 800, color: '#1a1a1a',
-              flexShrink: 0,
+              fontSize: '1rem', flexShrink: 0,
+              boxShadow: '0 2px 8px rgba(26,86,219,0.3)',
             }}
           >
-            AI
+            <i className="bi bi-bar-chart-line-fill" style={{ color: '#fff', fontSize: '0.9rem' }}></i>
           </div>
-          <span style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>
-            BizDashboard
-          </span>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+              <span style={{ fontWeight: 800, fontSize: '1rem', color: '#f1f5f9', letterSpacing: '-0.3px', lineHeight: 1.2 }}>
+                Insight
+              </span>
+              <span style={{
+                fontWeight: 800, fontSize: '1rem', letterSpacing: '-0.3px', lineHeight: 1.2,
+                background: 'linear-gradient(135deg, #60a5fa 0%, #38bdf8 100%)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+              }}>
+                IQ
+              </span>
+            </div>
+            <div style={{ fontSize: '0.6rem', color: '#475569', fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 1 }}>
+              Transform Data into Decisions
+            </div>
+          </div>
         </div>
 
         {/* Nav */}
@@ -112,7 +126,7 @@ const MainLayout = () => {
         </div>
 
         {/* User footer */}
-        <div style={{ padding: '1rem', borderTop: '1px solid var(--border)' }}>
+        <div style={{ padding: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
           <div className="d-flex align-items-center gap-3 mb-3">
             <img
               src={getAvatar()}
@@ -120,16 +134,16 @@ const MainLayout = () => {
               className="avatar avatar-sm flex-shrink-0"
             />
             <div className="overflow-hidden">
-              <div style={{ fontWeight: 600, fontSize: '0.82rem', color: 'var(--text-primary)' }} className="text-truncate">
+              <div style={{ fontWeight: 600, fontSize: '0.82rem', color: '#f1f5f9' }} className="text-truncate">
                 {user?.first_name} {user?.last_name}
               </div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{user?.role}</div>
+              <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{user?.role}</div>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="btn btn-ghost w-100 d-flex align-items-center justify-content-center gap-2"
-            style={{ fontSize: '0.82rem', color: '#dc2626', borderColor: '#fecaca' }}
+            className="btn w-100 d-flex align-items-center justify-content-center gap-2"
+            style={{ fontSize: '0.82rem', color: '#f87171', borderColor: 'rgba(248,113,113,0.3)', background: 'rgba(248,113,113,0.08)', borderRadius: 8, border: '1px solid rgba(248,113,113,0.3)' }}
           >
             <i className="bi bi-box-arrow-right"></i>
             Logout

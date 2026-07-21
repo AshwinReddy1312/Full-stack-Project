@@ -7,18 +7,20 @@
    ============================================================ */
 :root {
   /* Background */
-  --bg-main:          #f5f5f0;
-  --bg-secondary:     #eeede8;
+  --bg-main:          #f8faff;
+  --bg-secondary:     #f0f4ff;
   --bg-card:          #ffffff;
-  --bg-card-alt:      #fafaf7;
-  --bg-dark-card:     #1e1e1e;
-  --bg-dark-card2:    #2a2a2a;
+  --bg-card-alt:      #f8faff;
+  --bg-dark-card:     #0f172a;
+  --bg-dark-card2:    #1e293b;
 
-  /* Accent */
-  --accent:           #f5c518;      /* yellow */
-  --accent-hover:     #e6b800;
-  --accent-light:     #fff8d6;
-  --accent-dark:      #1e1e1e;      /* near-black for contrast text */
+  /* Accent — InsightIQ blue gradient */
+  --accent:           #1a56db;      /* primary blue */
+  --accent-2:         #0ea5e9;      /* bright cyan-blue */
+  --accent-hover:     #1447c7;
+  --accent-light:     #eff6ff;
+  --accent-gradient:  linear-gradient(135deg, #1a56db 0%, #0ea5e9 100%);
+  --accent-dark:      #0f172a;      /* navy */
 
   /* Text */
   --text-primary:     #1a1a1a;
@@ -42,8 +44,8 @@
   --radius-xl:        24px;
 
   /* Sidebar */
-  --sidebar-bg:       #ffffff;
-  --sidebar-width:    240px;
+  --sidebar-bg:       #0f172a;      /* InsightIQ navy */
+  --sidebar-width:    250px;
 
   /* Header */
   --header-bg:        #ffffff;
@@ -128,7 +130,7 @@ body {
    ============================================================ */
 .sidebar-logo {
   padding: 1.5rem 1.25rem 1rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
 .sidebar-section-label {
@@ -136,7 +138,7 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-muted);
+  color: #475569;
   padding: 0.75rem 1.25rem 0.4rem;
 }
 
@@ -146,7 +148,7 @@ body {
   gap: 0.75rem;
   padding: 0.65rem 1rem;
   margin: 0.15rem 0.75rem;
-  color: var(--text-secondary);
+  color: #94a3b8;
   text-decoration: none;
   font-weight: 500;
   font-size: 0.875rem;
@@ -162,19 +164,19 @@ body {
 }
 
 .sidebar-link:hover {
-  color: var(--text-primary);
-  background: var(--bg-secondary);
+  color: #ffffff;
+  background: rgba(255,255,255,0.08);
 }
 
 .sidebar-link.active {
-  color: var(--text-primary);
-  background: var(--accent);
+  color: #ffffff;
+  background: var(--accent-gradient);
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(245,197,24,0.35);
+  box-shadow: 0 2px 12px rgba(26,86,219,0.4);
 }
 
 .sidebar-link.active i {
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 /* ============================================================
@@ -246,10 +248,10 @@ body {
    BUTTONS
    ============================================================ */
 
-/* Primary yellow button */
+/* Primary blue button */
 .btn-accent {
-  background: var(--accent);
-  color: var(--text-primary);
+  background: var(--accent-gradient);
+  color: #ffffff;
   border: none;
   border-radius: var(--radius-sm);
   font-weight: 600;
@@ -257,36 +259,36 @@ body {
   padding: 0.6rem 1.25rem;
   transition: all 0.2s ease;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(245,197,24,0.3);
+  box-shadow: 0 2px 8px rgba(26,86,219,0.3);
 }
 
 .btn-accent:hover {
-  background: var(--accent-hover);
+  background: linear-gradient(135deg, #1447c7 0%, #0284c7 100%);
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(245,197,24,0.4);
-  color: var(--text-primary);
+  box-shadow: 0 4px 14px rgba(26,86,219,0.4);
+  color: #ffffff;
 }
 
 .btn-accent:active { transform: translateY(0); }
 
 /* Keep btn-glow as alias */
 .btn-glow {
-  background: var(--accent);
-  color: var(--text-primary) !important;
+  background: var(--accent-gradient);
+  color: #ffffff !important;
   border: none;
   border-radius: var(--radius-sm);
   font-weight: 600;
   font-size: 0.875rem;
   padding: 0.6rem 1.25rem;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(245,197,24,0.3);
+  box-shadow: 0 2px 8px rgba(26,86,219,0.3);
 }
 
 .btn-glow:hover {
-  background: var(--accent-hover);
+  background: linear-gradient(135deg, #1447c7 0%, #0284c7 100%);
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(245,197,24,0.4);
-  color: var(--text-primary) !important;
+  box-shadow: 0 4px 14px rgba(26,86,219,0.4);
+  color: #ffffff !important;
 }
 
 /* Ghost button */
@@ -347,7 +349,7 @@ body {
 .form-control:focus,
 .form-select:focus {
   border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px rgba(245,197,24,0.18) !important;
+  box-shadow: 0 0 0 3px rgba(26,86,219,0.14) !important;
   outline: none !important;
   background: var(--bg-card) !important;
 }
@@ -481,7 +483,7 @@ body {
    ============================================================ */
 .auth-page {
   min-height: 100vh;
-  background: var(--bg-main);
+  background: #f0f4ff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -489,9 +491,9 @@ body {
 
 .auth-card {
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  border: 1px solid #dbeafe;
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 8px 40px rgba(26,86,219,0.1);
   padding: 2.5rem;
   width: 100%;
   max-width: 480px;
@@ -524,7 +526,7 @@ body {
 .progress-bar-fill {
   height: 100%;
   border-radius: 999px;
-  background: var(--accent);
+  background: var(--accent-gradient);
   transition: width 0.4s ease;
 }
 
@@ -549,7 +551,7 @@ body {
 .page-item.active .page-link {
   background: var(--accent) !important;
   border-color: var(--accent) !important;
-  color: var(--text-primary) !important;
+  color: #ffffff !important;
   font-weight: 700 !important;
 }
 
@@ -624,7 +626,7 @@ body {
 .rounded-md    { border-radius: var(--radius-md) !important; }
 
 .text-gradient {
-  background: linear-gradient(135deg, #1a1a1a 0%, #4a4a4a 100%);
+  background: var(--accent-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -650,7 +652,7 @@ body {
 
   .sidebar-panel.open {
     transform: translateX(0);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.3);
   }
 
   .main-wrapper {

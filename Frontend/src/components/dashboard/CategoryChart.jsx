@@ -10,7 +10,7 @@ import {
 } from 'recharts';
 
 const COLORS = [
-  '#f5c518', '#22c55e', '#6366f1', '#ef4444', '#06b6d4',
+  '#1a56db', '#0ea5e9', '#22c55e', '#6366f1', '#ef4444',
   '#f97316', '#a855f7', '#ec4899', '#14b8a6', '#84cc16',
 ];
 
@@ -57,9 +57,9 @@ const CategoryChart = ({ data = [], loading, view = 'pie' }) => {
           <button key={v} onClick={() => setActiveView(v)}
             style={{
               padding: '3px 12px', borderRadius: 8, fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
-              background: activeView === v ? 'var(--accent)' : 'var(--bg-secondary)',
+              background: activeView === v ? 'var(--accent-gradient)' : 'var(--bg-secondary)',
               border: `1px solid ${activeView === v ? 'var(--accent)' : 'var(--border)'}`,
-              color: activeView === v ? '#1a1a1a' : 'var(--text-secondary)',
+              color: activeView === v ? '#ffffff' : 'var(--text-secondary)',
             }}
           >
             <i className={`bi ${v === 'pie' ? 'bi-pie-chart' : 'bi-bar-chart-line'} me-1`}></i>
