@@ -8,3 +8,6 @@ createRoot(document.getElementById('root')).render(
     <App />
   </StrictMode>,
 )
+
+// Bootstrap JS for modal support
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'

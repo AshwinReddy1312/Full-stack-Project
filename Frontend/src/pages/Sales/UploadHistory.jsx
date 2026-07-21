@@ -9,11 +9,9 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { getUploadHistory, deleteUpload } from '../../services/salesService';
 import Pagination from '../../components/products/Pagination';
-import DeleteModal from '../../components/products/DeleteModal';
 
 const PAGE_SIZE = 15;
 
-// ── Status badge ──────────────────────────────────────────────────────────────
 const StatusBadge = ({ status }) => {
   const map = {
     Pending:    { bg: '#fefce8', color: '#ca8a04', border: '#fde68a', icon: 'bi-hourglass-split' },
@@ -29,25 +27,23 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-// ── Mini progress bar ─────────────────────────────────────────────────────────
 const MiniProgress = ({ rate }) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
     <div style={{ flex: 1, height: 6, background: '#e5e5e0', borderRadius: 999, overflow: 'hidden' }}>
-      <div style={{ height: '100%', width: rate + '%', background: rate === 100 ? '#16a34a' : 'var(--accent)', borderRadius: 999, transition: 'width 0.4s' }} />
+      <div style={{ height: '100%', width: rate + '%', background: rate === 100 ? '#16a34a' : 'var(--accent)', borderRadius: 999 }} />
     </div>
     <small style={{ fontWeight: 700, minWidth: 36, color: rate === 100 ? '#16a34a' : 'var(--text-primary)' }}>{rate}%</small>
   </div>
 );
 
-// ── Main Component ────────────────────────────────────────────────────────────
 const UploadHistory = () => {
   const navigate = useNavigate();
 
-  const [uploads, setUploads]     = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [deleting, setDeleting]   = useState(false);
-  const [toDelete, setToDelete]   = useState(null);
-
+  const [uploads, setUploads]         = useState([]);
+  const [loading, setLoading]         = useState(true);
+  const [deleting, setDeleting]       = useState(false);
+  const [toDelete, setToDelete]       = useState(null);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages]   = useState(1);
   const [totalCount, setTotalCount]   = useState(0);
@@ -74,24 +70,29 @@ const UploadHistory = () => {
     setDeleting(true);
     try {
       await deleteUpload(toDelete.id);
-      toast.success(`Upload "${toDelete.filename}" deleted.`);
+      toast.success(`"${toDelete.filename}" deleted.`);
       setToDelete(null);
+      setShowConfirm(false);
       fetchHistory();
     } catch {
-      toast.error('Failed to delete upload.');
+      toast.error('Failed to delete.');
     } finally {
       setDeleting(false);
     }
   };
 
+  const openConfirm = (e, u) => {
+    e.stopPropagation();
+    setToDelete(u);
+    setShowConfirm(true);
+  };
+
   const formatDate = (d) =>
     d ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
 
-  // ── Aggregate stats ───────────────────────────────────────────────────────
   const totalImported  = uploads.reduce((s, u) => s + (u.imported_count || 0), 0);
   const totalRecords   = uploads.reduce((s, u) => s + (u.total_rows || 0), 0);
   const completedCount = uploads.filter(u => u.status === 'Completed').length;
-  const failedCount    = uploads.filter(u => u.status === 'Failed').length;
 
   return (
     <div>
@@ -103,10 +104,7 @@ const UploadHistory = () => {
             Track all CSV imports and their processing status
           </p>
         </div>
-        <button
-          className="btn btn-accent px-4 py-2 fw-semibold"
-          onClick={() => navigate('/uploads/new')}
-        >
+        <button className="btn btn-accent px-4 py-2 fw-semibold" onClick={() => navigate('/uploads/new')}>
           <i className="bi bi-upload me-2"></i>New Upload
         </button>
       </div>
@@ -114,10 +112,10 @@ const UploadHistory = () => {
       {/* Stat cards */}
       <div className="row g-3 mb-4">
         {[
-          { label: 'Total Uploads',    value: totalCount,    icon: 'bi-file-earmark-arrow-up', bg: '#eff6ff', color: '#2563eb' },
-          { label: 'Completed',        value: completedCount, icon: 'bi-check-circle-fill',    bg: '#f0fdf4', color: '#16a34a' },
-          { label: 'Total Rows',       value: totalRecords.toLocaleString(), icon: 'bi-table', bg: '#fefce8', color: '#ca8a04' },
-          { label: 'Records Imported', value: totalImported.toLocaleString(), icon: 'bi-database-fill-check', bg: '#f5f3ff', color: '#7c3aed' },
+          { label: 'Total Uploads',    value: totalCount,                    icon: 'bi-file-earmark-arrow-up',    bg: '#eff6ff', color: '#2563eb' },
+          { label: 'Completed',        value: completedCount,                icon: 'bi-check-circle-fill',        bg: '#f0fdf4', color: '#16a34a' },
+          { label: 'Total Rows',       value: totalRecords.toLocaleString(), icon: 'bi-table',                    bg: '#fefce8', color: '#ca8a04' },
+          { label: 'Records Imported', value: totalImported.toLocaleString(),icon: 'bi-database-fill-check',      bg: '#f5f3ff', color: '#7c3aed' },
         ].map(({ label, value, icon, bg, color }) => (
           <div className="col-6 col-md-3" key={label}>
             <div className="stat-card d-flex align-items-center gap-3">
@@ -152,17 +150,13 @@ const UploadHistory = () => {
         {loading ? (
           <div className="text-center py-5">
             <div className="spinner-border" style={{ color: 'var(--accent)', width: '2.2rem', height: '2.2rem' }}></div>
-            <p style={{ color: 'var(--text-muted)', marginTop: 12, fontSize: '0.875rem' }}>Loading history…</p>
+            <p style={{ color: 'var(--text-muted)', marginTop: 12, fontSize: '0.875rem' }}>Loading…</p>
           </div>
         ) : uploads.length === 0 ? (
           <div className="text-center py-5">
-            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--bg-secondary)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
-              <i className="bi bi-file-earmark-x" style={{ fontSize: '1.5rem', color: 'var(--text-muted)' }}></i>
-            </div>
+            <i className="bi bi-file-earmark-x" style={{ fontSize: '2.5rem', color: 'var(--text-muted)', display: 'block', marginBottom: 12 }}></i>
             <h6 style={{ fontWeight: 700, marginBottom: 4 }}>No Uploads Yet</h6>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: '0 0 1rem' }}>
-              Upload your first CSV file to get started
-            </p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: '0 0 1rem' }}>Upload your first CSV file</p>
             <button className="btn btn-accent px-4" onClick={() => navigate('/uploads/new')}>
               <i className="bi bi-upload me-2"></i>Upload Now
             </button>
@@ -181,46 +175,31 @@ const UploadHistory = () => {
                 <tbody>
                   {uploads.map((u) => (
                     <tr key={u.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/uploads/${u.id}`)}>
-                      {/* Upload ID */}
                       <td>
                         <span style={{ fontFamily: 'monospace', fontSize: '0.78rem', background: 'var(--bg-secondary)', padding: '2px 8px', borderRadius: 6, border: '1px solid var(--border)' }}>
                           {u.upload_id}
                         </span>
                       </td>
-
-                      {/* Filename */}
                       <td>
                         <div style={{ fontWeight: 600, fontSize: '0.85rem', maxWidth: 160 }} className="text-truncate" title={u.filename}>
                           <i className="bi bi-file-earmark-spreadsheet me-2" style={{ color: '#16a34a' }}></i>
                           {u.filename}
                         </div>
                       </td>
-
-                      {/* Status */}
                       <td><StatusBadge status={u.status} /></td>
-
-                      {/* Counts */}
                       <td style={{ fontWeight: 600 }}>{u.total_rows}</td>
                       <td style={{ color: '#16a34a', fontWeight: 700 }}>{u.imported_count}</td>
-                      <td style={{ color: u.failed_count > 0 ? '#dc2626' : 'var(--text-muted)', fontWeight: u.failed_count > 0 ? 700 : 400 }}>{u.failed_count}</td>
+                      <td style={{ color: u.failed_count > 0 ? '#dc2626' : 'var(--text-muted)' }}>{u.failed_count}</td>
                       <td style={{ color: u.duplicate_count > 0 ? '#ca8a04' : 'var(--text-muted)' }}>{u.duplicate_count}</td>
-
-                      {/* Success rate */}
                       <td style={{ minWidth: 110 }}>
                         {u.status === 'Completed' ? <MiniProgress rate={u.success_rate || 0} /> : '—'}
                       </td>
-
-                      {/* Processing time */}
                       <td style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                         {u.processing_time ? u.processing_time + 's' : '—'}
                       </td>
-
-                      {/* Date */}
                       <td style={{ fontSize: '0.78rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                         {formatDate(u.created_at)}
                       </td>
-
-                      {/* Actions */}
                       <td onClick={(e) => e.stopPropagation()}>
                         <div className="d-flex gap-2">
                           <button
@@ -230,20 +209,9 @@ const UploadHistory = () => {
                           >
                             <i className="bi bi-eye"></i>
                           </button>
-                          {u.failed_count > 0 && (
-                            <button
-                              title="View Errors"
-                              onClick={() => navigate(`/uploads/${u.id}?tab=errors`)}
-                              style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: 7, padding: '4px 10px', fontSize: '0.78rem', cursor: 'pointer' }}
-                            >
-                              <i className="bi bi-bug"></i>
-                            </button>
-                          )}
                           <button
                             title="Delete"
-                            data-bs-toggle="modal"
-                            data-bs-target="#deleteUploadModal"
-                            onClick={() => setToDelete(u)}
+                            onClick={(e) => openConfirm(e, u)}
                             style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: 7, padding: '4px 10px', fontSize: '0.78rem', cursor: 'pointer' }}
                           >
                             <i className="bi bi-trash3"></i>
@@ -267,13 +235,35 @@ const UploadHistory = () => {
         )}
       </div>
 
-      <DeleteModal
-        modalId="deleteUploadModal"
-        title="Delete Upload"
-        message={toDelete ? `Delete upload "${toDelete.filename}" and all ${toDelete.imported_count} imported records? This cannot be undone.` : ''}
-        onConfirm={handleDeleteConfirm}
-        loading={deleting}
-      />
+      {/* Inline delete confirm — pure React, no Bootstrap modal needed */}
+      {showConfirm && toDelete && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="card-panel p-4" style={{ maxWidth: 420, width: '90%' }}>
+            <div className="d-flex align-items-center gap-3 mb-3">
+              <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#fef2f2', border: '1px solid #fecaca', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <i className="bi bi-trash3-fill" style={{ color: '#dc2626' }}></i>
+              </div>
+              <h5 style={{ fontWeight: 800, margin: 0 }}>Delete Upload</h5>
+            </div>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+              Delete <strong>{toDelete.filename}</strong> and all <strong>{toDelete.imported_count}</strong> imported records? This cannot be undone.
+            </p>
+            <div className="d-flex gap-3 justify-content-end">
+              <button className="btn btn-ghost px-4" onClick={() => { setShowConfirm(false); setToDelete(null); }} disabled={deleting}>
+                Cancel
+              </button>
+              <button
+                className="btn px-4 fw-semibold"
+                style={{ background: '#dc2626', color: '#fff', border: 'none', borderRadius: 8 }}
+                onClick={handleDeleteConfirm}
+                disabled={deleting}
+              >
+                {deleting ? <><span className="spinner-border spinner-border-sm me-2"></span>Deleting…</> : <><i className="bi bi-trash3 me-2"></i>Delete</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

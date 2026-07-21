@@ -30,6 +30,7 @@ import CustomerDetail from './pages/Customers/CustomerDetail';
 // Sales / CSV Upload
 import CSVUpload      from './pages/Sales/CSVUpload';
 import UploadHistory  from './pages/Sales/UploadHistory';
+import UploadDetail   from './pages/Sales/UploadDetail';
 
 // AI Insights
 import AIInsights from './pages/AIInsights';
@@ -68,7 +69,7 @@ function App() {
               {/* Sales / CSV Upload */}
               <Route path="/uploads"             element={<UploadHistory />} />
               <Route path="/uploads/new"         element={<CSVUpload />} />
-              <Route path="/uploads/:id"         element={<UploadHistory />} />
+              <Route path="/uploads/:id"         element={<UploadDetail />} />
 
               {/* AI Insights */}
               <Route path="/ai-insights" element={<AIInsights />} />

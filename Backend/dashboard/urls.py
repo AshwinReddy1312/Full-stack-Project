@@ -12,14 +12,18 @@ from .views import (
     TopCustomersView,
     RecentSalesView,
     MonthlySummaryView,
+    ProductAnalyticsView,
+    CustomerAnalyticsView,
 )
 
 urlpatterns = [
-    path('summary/',           DashboardSummaryView.as_view(),  name='dashboard_summary'),
-    path('revenue-trend/',     RevenueTrendView.as_view(),      name='revenue_trend'),
-    path('sales-by-category/', SalesByCategoryView.as_view(),  name='sales_by_category'),
-    path('top-products/',      TopProductsView.as_view(),       name='top_products'),
-    path('top-customers/',     TopCustomersView.as_view(),      name='top_customers'),
-    path('recent-sales/',      RecentSalesView.as_view(),       name='recent_sales'),
-    path('monthly-summary/',   MonthlySummaryView.as_view(),    name='monthly_summary'),
+    path('summary/',              DashboardSummaryView.as_view(),  name='dashboard_summary'),
+    path('revenue-trend/',        RevenueTrendView.as_view(),      name='revenue_trend'),
+    path('sales-by-category/',    SalesByCategoryView.as_view(),   name='sales_by_category'),
+    path('top-products/',         TopProductsView.as_view(),       name='top_products'),
+    path('top-customers/',        TopCustomersView.as_view(),      name='top_customers'),
+    path('recent-sales/',         RecentSalesView.as_view(),       name='recent_sales'),
+    path('monthly-summary/',      MonthlySummaryView.as_view(),    name='monthly_summary'),
+    path('product-analytics/',    ProductAnalyticsView.as_view(),  name='product_analytics'),
+    path('customer-analytics/',   CustomerAnalyticsView.as_view(), name='customer_analytics'),
 ]
