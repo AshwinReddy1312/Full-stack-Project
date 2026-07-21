@@ -137,10 +137,12 @@ const CSVUpload = () => {
   const [confirming, setConfirming]   = useState(false);
 
   // From backend after upload
-  const [uploadId, setUploadId]       = useState(null);
-  const [totalRows, setTotalRows]     = useState(0);
-  const [preview, setPreview]         = useState([]);
-  const [validationErrors, setVErrors]= useState([]);
+  const [uploadId, setUploadId]         = useState(null);
+  const [totalRows, setTotalRows]       = useState(0);
+  const [preview, setPreview]           = useState([]);
+  const [validationErrors, setVErrors]  = useState([]);
+  const [mappedFields, setMappedFields] = useState([]);
+  const [unmappedFields, setUnmappedFields] = useState([]);
 
   // From backend after confirm
   const [summary, setSummary]         = useState(null);
@@ -174,8 +176,10 @@ const CSVUpload = () => {
         setUploadId(d.upload_id);
         setTotalRows(d.total_rows);
         setPreview(d.preview || []);
+        setMappedFields(d.mapped_fields || []);
+        setUnmappedFields(d.unmapped_fields || []);
         setVErrors([]);
-        toast.success(`Validated! ${d.total_rows} rows found. Review preview below.`);
+        toast.success(`File accepted! ${d.total_rows} rows found. Review the preview below.`);
         setStep(1);
       } else {
         toast.error(res.data?.message || 'Upload failed.');
@@ -215,7 +219,8 @@ const CSVUpload = () => {
 
   const resetAll = () => {
     setStep(0); setFile(null); setUploadId(null);
-    setPreview([]); setVErrors([]); setSummary(null); setProgress(0);
+    setPreview([]); setVErrors([]); setSummary(null);
+    setProgress(0); setMappedFields([]); setUnmappedFields([]);
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -302,25 +307,34 @@ const CSVUpload = () => {
           {/* Column guide */}
           <div style={{ background: 'var(--bg-secondary)', borderRadius: 10, padding: '1rem 1.25rem', marginBottom: '1.5rem', border: '1px solid var(--border)' }}>
             <div style={{ fontWeight: 700, fontSize: '0.8rem', marginBottom: 8, color: 'var(--text-secondary)' }}>
-              <i className="bi bi-info-circle me-2"></i>Expected CSV Columns
+              <i className="bi bi-magic me-2"></i>Smart Auto-Detection — Upload Any Business CSV
             </div>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 10 }}>
+              The system automatically detects and maps your columns — no specific format required.
+              It recognises common business CSV headers like sales, inventory, prescriptions, invoices, etc.
+            </p>
             <div className="row g-1">
               {[
-                { col: 'Date', req: true },       { col: 'Product Name', req: true },
-                { col: 'Category', req: false },  { col: 'Customer Name', req: true },
-                { col: 'Quantity', req: true },   { col: 'Cost Price', req: false },
-                { col: 'Selling Price', req: true }, { col: 'Total Amount', req: false },
+                { col: 'Date / Order Date / Invoice Date', req: true },
+                { col: 'Product / Item / Medicine / Service', req: true },
+                { col: 'Customer / Client / Patient / Buyer', req: true },
+                { col: 'Quantity / Qty / Units', req: false },
+                { col: 'Price / Rate / Selling Price', req: false },
+                { col: 'Total / Amount / Revenue', req: false },
+                { col: 'Category / Type / Group', req: false },
+                { col: 'Any other columns', req: false },
               ].map(({ col, req }) => (
-                <div key={col} className="col-6 col-md-3">
+                <div key={col} className="col-12 col-md-6">
                   <span style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ color: req ? '#dc2626' : '#16a34a', fontWeight: 700 }}>{req ? '✱' : '○'}</span>
+                    <span style={{ color: req ? '#2563eb' : '#16a34a', fontWeight: 700 }}>{req ? '●' : '○'}</span>
                     {col}
                   </span>
                 </div>
               ))}
             </div>
             <small style={{ color: 'var(--text-muted)', marginTop: 6, display: 'block' }}>
-              <span style={{ color: '#dc2626' }}>✱</span> Required &nbsp;&nbsp; <span style={{ color: '#16a34a' }}>○</span> Optional
+              <span style={{ color: '#2563eb' }}>●</span> Auto-mapped &nbsp;&nbsp;
+              <span style={{ color: '#16a34a' }}>○</span> Optional / stored raw
             </small>
           </div>
 
@@ -353,6 +367,36 @@ const CSVUpload = () => {
               </div>
             ))}
           </div>
+
+          {/* Mapping info */}
+          {(mappedFields.length > 0 || unmappedFields.length > 0) && (
+            <div className="card-panel p-4 mb-4" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+              <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: 10, color: '#15803d' }}>
+                <i className="bi bi-magic me-2"></i>Auto-detected Column Mapping
+              </div>
+              <div className="row g-2">
+                {mappedFields.map((f) => (
+                  <div key={f} className="col-auto">
+                    <span style={{ background: '#dcfce7', color: '#15803d', border: '1px solid #bbf7d0', borderRadius: 999, padding: '2px 10px', fontSize: '0.75rem', fontWeight: 600 }}>
+                      <i className="bi bi-check-circle me-1"></i>
+                      {f.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </span>
+                  </div>
+                ))}
+                {unmappedFields.map((f) => (
+                  <div key={f} className="col-auto">
+                    <span style={{ background: '#fefce8', color: '#ca8a04', border: '1px solid #fde68a', borderRadius: 999, padding: '2px 10px', fontSize: '0.75rem', fontWeight: 600 }}>
+                      <i className="bi bi-info-circle me-1"></i>
+                      {f} (stored as-is)
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <small style={{ color: '#166534', marginTop: 8, display: 'block' }}>
+                Unmapped columns are stored in raw format and will be available for AI analysis.
+              </small>
+            </div>
+          )}
 
           {/* Preview table */}
           <div className="card-panel p-4 mb-4">

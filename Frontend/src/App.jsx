@@ -31,6 +31,9 @@ import CustomerDetail from './pages/Customers/CustomerDetail';
 import CSVUpload      from './pages/Sales/CSVUpload';
 import UploadHistory  from './pages/Sales/UploadHistory';
 
+// AI Insights
+import AIInsights from './pages/AIInsights';
+
 function App() {
   return (
     <AuthProvider>
@@ -63,6 +66,9 @@ function App() {
               <Route path="/uploads"             element={<UploadHistory />} />
               <Route path="/uploads/new"         element={<CSVUpload />} />
               <Route path="/uploads/:id"         element={<UploadHistory />} />
+
+              {/* AI Insights */}
+              <Route path="/ai-insights"         element={<AIInsights />} />
             </Route>
           </Route>
 
